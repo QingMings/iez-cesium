@@ -50,7 +50,8 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/',
+    //这里什么都不填,就会使用相对路径
+    assetsPublicPath: '',
 
     /**
      * Source Maps
