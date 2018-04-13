@@ -19,6 +19,10 @@ export default {
     padding: 0;
     overflow: hidden;
   }
+  /*隐藏cesium 下部bind map的文字提示 */
+  .cesium-viewer-bottom{
+    display: none;
+  }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
