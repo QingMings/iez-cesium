@@ -69,6 +69,11 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       // Define relative base path in cesium for loading assets
       CESIUM_BASE_URL: JSON.stringify('')
     }),
+    new webpack.optimize.CommonsChunkPlugin('common.js'),
+    // new webpack.ProvidePlugin({
+    //   jQuery: "jquery",
+    //   $: "jquery"
+    // }),
     // copy custom static assets
     new CopyWebpackPlugin([
       {

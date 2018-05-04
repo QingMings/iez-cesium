@@ -34,10 +34,17 @@ module.exports = {
       ? config.build.assetsPublicPath
       : config.dev.assetsPublicPath,
     sourcePrefix: ' '
+    // ,
+    // libraryTarget: "amd"
+    ,
+    libraryTarget: 'var'
   },
   amd:{
     toUrlUndefined: true
   },
+  // externals: {
+  //   'layer':'layer'
+  // },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {

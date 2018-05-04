@@ -1,0 +1,49 @@
+/* 工具栏容器 */
+.iez-toolbar {
+  /*background-color:yellow;*/
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin-left: -5px;
+  z-index: 99;
+}
+.iez-buttons {
+  margin: 5px 5px 5px 8px;
+  float: left;
+}
+/* 工具栏按钮样式 */
+.iez-toolbar-btn {
+  margin-right: 5px;
+  color: #fff;
+  background: rgba(66, 61, 61, 0.5);
+  border-color: rgba(88, 87, 87, 0.4);
+}
+.iez-toolbar-btn:hover {
+  color: #fff;
+  fill: #fff;
+  background: #48b;
+  border-color: #aef;
+  -webkit-box-shadow: 0 0 8px #fff;
+  -moz-box-shadow: 0 0 8px #fff;
+  box-shadow: 0 0 8px #fff;
+}
+.iez-dropmenu{
+  /*background: rgba(0, 0, 0, 0.4);*/
+  color: #fff;
+}
+.iez-dropmenu:hover{
+  background: rgba(0, 0, 0, 0.4);
+  font-weight:bold;
+}
+.ivu-select-dropdown{
+  background: rgba(23, 20, 20, 0.5);
+  border-color: rgba(72, 69, 69, 0.4);
+  box-shadow: 0 1px 6px rgba(130, 122, 122, 0.62);
+}
+.ivu-dropdown-item{
+  color: #ffffff;
+}
+.ivu-dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+}

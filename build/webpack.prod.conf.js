@@ -124,7 +124,11 @@ const webpackConfig = merge(baseWebpackConfig, {
       children: true,
       minChunks: 3
     }),
-
+    new webpack.optimize.CommonsChunkPlugin('common.js'),
+    // new webpack.ProvidePlugin({
+    //   jQuery: "jquery",
+    //   $: "jquery"
+    // }),
     // copy custom static assets
     new CopyWebpackPlugin([
       {

@@ -1,0 +1,26 @@
+/*更改layer弹出框为透明样式*/
+.layui-layer-dialog {
+  background: rgba(23, 20, 20, 0.5);
+}
+
+.layui-layer-title {
+  background-color: rgba(162, 149, 149, 0.06);
+  border-bottom: 1px solid #aaeeff82;
+  color:#fff;
+}
+.layui-layer-dialog .layui-layer-content{
+  color:#fff;
+}
+.layui-layer-border{
+  /*border: 1px solid rgba(137, 210, 210, 0.57)*/
+  border: 1px solid rgba(66, 199, 199, 0.63);
+
+}
+/*替换layer自带的关闭图标*/
+.layui-layer-ico{
+  background: url('../../static/js/layer/theme/default/closeLayer.png') no-repeat;
+}
+
+.layui-layer-setwin .layui-layer-close1{
+  background-position: 0px 0px;
+}
