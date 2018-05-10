@@ -12,13 +12,19 @@
   float: left;
 }
 /* 工具栏按钮样式 */
-.iez-toolbar-btn {
+/*.iez-toolbar .iez-toolbar-btn .ivu-btn {*/
+  /*margin-right: 5px;*/
+  /*color: #fff;*/
+  /*background: rgba(66, 61, 61, 0.5);*/
+  /*border-color: rgba(88, 87, 87, 0.4);*/
+/*}*/
+.iez-toolbar .iez-buttons .ivu-btn{
   margin-right: 5px;
   color: #fff;
   background: rgba(66, 61, 61, 0.5);
   border-color: rgba(88, 87, 87, 0.4);
 }
-.iez-toolbar-btn:hover {
+.iez-toolbar .iez-buttons .ivu-btn:hover {
   color: #fff;
   fill: #fff;
   background: #48b;
@@ -31,19 +37,19 @@
   /*background: rgba(0, 0, 0, 0.4);*/
   color: #fff;
 }
-.iez-dropmenu:hover{
+ .iez-dropmenu:hover{
   background: rgba(0, 0, 0, 0.4);
   font-weight:bold;
 }
-.ivu-select-dropdown{
+.iez-toolbar .iez-buttons .ivu-select-dropdown{
   background: rgba(23, 20, 20, 0.5);
   border-color: rgba(72, 69, 69, 0.4);
   box-shadow: 0 1px 6px rgba(130, 122, 122, 0.62);
 }
-.ivu-dropdown-item{
+.iez-toolbar .iez-buttons .ivu-dropdown-item{
   color: #ffffff;
 }
-.ivu-dropdown-item:hover {
+.iez-toolbar .iez-buttons .ivu-dropdown-item:hover {
   background: rgba(0, 0, 0, 0.4);
   color: #ffffff;
 }

@@ -1,14 +1,14 @@
 <template>
   <div id="ToolBar.vue" class="iez-toolbar">
    <div class="iez-buttons">
-     <Button shape="circle" @click="layerManagerTrigger"  title="图层管理" class="  ivu-btn-circle ivu-btn-icon-only iez-toolbar-btn">
+     <Button shape="circle" @click="layerManagerTrigger"  title="图层管理" class="  ivu-btn-circle ivu-btn-icon-only ">
        <Icon type="ios-settings-strong"></Icon>
      </Button>
-    <Button shape="circle" title="工具" @click="toolsTrigger" class="ivu-btn-circle ivu-btn-icon-only iez-toolbar-btn">
+    <Button shape="circle" title="工具" @click="toolsTrigger" class="ivu-btn-circle ivu-btn-icon-only ">
       <Icon type="android-menu"></Icon>
     </Button>
      <Dropdown trigger="custom" :visible="visible" placement="bottom-start">
-       <Button shape="circle" title="常用工具" @click="dropDownCustomHandler" class="ivu-btn-circle ivu-btn-icon-only iez-toolbar-btn">
+       <Button shape="circle" title="常用工具" @click="dropDownCustomHandler" class="ivu-btn-circle ivu-btn-icon-only ">
          <Icon type="android-menu"></Icon>
        </Button>
        <DropdownMenu slot="list" class="iez-dropmenu" v-for="data in test" v-bind:key="data">
@@ -19,7 +19,7 @@
          <!--<DropdownItem>北京烤鸭</DropdownItem>-->
        </DropdownMenu>
      </Dropdown>
-     <Button shape="circle" title="全景" @click="panorama"  class="ivu-btn-circle ivu-btn-icon-only iez-toolbar-btn" >
+     <Button shape="circle" title="全景" @click="panorama"  class="ivu-btn-circle ivu-btn-icon-only " >
        <Icon type="ios-eye-outline"></Icon>
      </Button>
    </div>

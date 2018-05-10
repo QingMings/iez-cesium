@@ -1,11 +1,17 @@
 <template>
     <div id="PanoramaView" class="cd-section">
       <span class="cd-modal-bg" style=""></span>
+      <span class="cd-modal-center"></span>
       <a href="#" @click="closeModel"  @keyup.13="closeModel" class="cd-modal-close"></a>
+      <div class="cd-modal">
+        <!--<VueFrame></VueFrame>-->
+        <iframe id="rightFrame" style="width:100%;height:100%;overflow:hidden;margin:0" scrolling="no" frameborder="0" src="http://localhost:8080/360hot/senceServlet?dnid=58"></iframe>
+      </div>
     </div>
 </template>
 <script type="text/javascript">
 import $ from '../../static/js/jquery-vendor'
+// import VueFrame
 export default {
   name: 'PanoramaView',
   data () {
@@ -22,8 +28,11 @@ export default {
     this.$root.eventBus.$off('showPanorama', this.showPanorama)
   },
   mounted () {
+    var vm = this
     $(window).on('resize', function () {
-      if ($('.cd-section.modal-is-visible').length > 0) window.requestAnimationFrame(this.updateLayer)
+      if ($('.cd-section.modal-is-visible').length > 0) {
+        window.requestAnimationFrame(vm.updateLayer)
+      }
     })
   },
   methods: {
@@ -79,8 +88,8 @@ export default {
     updateLayer: function () {
       var layer = $('.cd-section.modal-is-visible').find('.cd-modal-bg')
       var layerRadius = layer.width() / 2
-      var layerTop = layer.siblings('.btn').offset().top + layerRadius - $(window).scrollTop()
-      var layerLeft = layer.siblings('.btn').offset().left + layerRadius
+      var layerTop = layer.siblings('.cd-modal-center').offset().top + layerRadius - $(window).scrollTop()
+      var layerLeft = layer.siblings('.cd-modal-center').offset().left + layerRadius
       var scale = this.scaleValue(layerTop, layerLeft, layerRadius, $(window).height(), $(window).width())
 
       layer.velocity({
