@@ -5,7 +5,9 @@
       <a href="#" @click="closeModel"  @keyup.13="closeModel" class="cd-modal-close"></a>
       <div class="cd-modal">
         <!--<VueFrame></VueFrame>-->
-        <iframe id="rightFrame" style="width:100%;height:100%;overflow:hidden;margin:0" scrolling="no" frameborder="0" src="http://localhost:8080/360hot/senceServlet?dnid=58"></iframe>
+        <iframe id="rightFrame" style="width:100%;height:100%;overflow:hidden;margin:0" scrolling="no" frameborder="0"
+                <!--src="http://localhost:8080/360hot/senceServlet?dnid=58"-->
+        ></iframe>
       </div>
     </div>
 </template>
@@ -19,6 +21,7 @@ export default {
     }
   },
   created () {
+    console.info('panorama created')
     // 监听showPanorama 方法 此方法由 ToolBar.vue 中的按钮触发,此事件在热部署中会多次执行，解决方案往下看
     // https://www.cnblogs.com/xiaochongchong/p/8127148.html
     this.$root.eventBus.$on('showPanorama', this.showPanorama)

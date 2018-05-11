@@ -1,0 +1,43 @@
+/* 右上角头像按钮样式文件 */
+.iez-toolbar-right {
+  /*background-color:yellow;*/
+  position: absolute;
+  right: 5px;
+  top: 7px;
+  margin-right: 5px;
+  z-index: 99;
+}
+.iez-profile-photo {
+  margin: 5px 8px 5px 8px;
+  float: left;
+}
+#cesiumContainer .cesium-viewer .cesium-viewer-toolbar{
+  top: 10px;
+  right: 52px;
+}
+.iez-profile-photo .demo-avatar-badge .ivu-avatar{
+  background: #303336;
+  cursor: pointer;
+  border: 1px solid #444;
+}
+.iez-profile-photo .demo-avatar-badge .ivu-avatar:hover{
+  color: #fff;
+  fill: #fff;
+  background: #48b;
+  border-color: #aef;
+  -webkit-box-shadow: 0 0 8px #fff;
+  box-shadow: 0 0 8px #fff;
+}
+
+.iez-profile-photo .demo-avatar-badge .ivu-avatar:active{
+  color: #000;
+  fill: #000;
+  background: #adf;
+  border-color: #fff;
+  -webkit-box-shadow: 0 0 8px #fff;
+  box-shadow: 0 0 8px #fff;
+}
+.iez-profile-photo .demo-avatar-badge .ivu-avatar:focus {
+  border-color: #ea4;
+  outline: none;
+}

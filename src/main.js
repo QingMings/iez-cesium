@@ -31,12 +31,16 @@ var vm = new Vue({
     }
   },
   mounted () {
+    console.info('app  mounted')
     // var viewer = new Cesium.CesiumWidget('cesiumContainer')
     var config = {
       geocoder: true,
       timeline: false,
       navigationHelpButton: false,
-      animation: false
+      animation: false,
+      baseLayerPicker: false,
+      sceneModePicker: false
+
       // ,
       // imageryProvider: new Cesium.WebMapServiceImageryProvider({
       //   url: 'http://192.168.2.136:8080/geoserver/nurc/wms',
@@ -44,21 +48,21 @@ var vm = new Vue({
       // })
     }
     // 使相机默认朝向中国
-    Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(73, 4, 135, 53)
-    var viewer = new Cesium.Viewer('cesiumContainer', config)
+    // Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(73, 4, 135, 53)
+    // var viewer = new Cesium.Viewer('cesiumContainer', config)
     // 显示帧率
-    viewer.scene.debugShowFramesPerSecond = true
+    // viewer.scene.debugShowFramesPerSecond = true
     // Cesium.viewerCesiumNavigationMixin(viewer, {})
     // 禁止相机转动
     // viewer.scene.screenSpaceCameraController.enableRotate = false
-    viewer.scene.globe.enableLighting = true
-    $('#cesiumContainer').css({'background': 'blue'})
-    $('#cesiumContainer').velocity({
-      top: 23,
-      left: 33
-    })
+    // viewer.scene.globe.enableLighting = true
+    // $('#cesiumContainer').css({'background': 'blue'})
+    // $('#cesiumContainer').velocity({
+    //   top: 23,
+    //   left: 33
+    // })
     // wfs
-    // var serviceUrl = 'http://10.211.55.12:8080/geoserver/tiger/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=tiger:poly_landmarks&maxFeatures=50&outputFormat=application%2Fjson'
+    // var serviceUrl = '../static/tewt.geojson'
     // var datasource = viewer.dataSources.add(Cesium.GeoJsonDataSource.load(serviceUrl, {
     //   stroke: Cesium.Color.BLACK,
     //   fill: Cesium.Color.RED,
@@ -239,12 +243,12 @@ var vm = new Vue({
     // viewer.dataSources.add(dataSource)
     // viewer.flyTo(dataSource)
 
-    var tileset = new Cesium.Cesium3DTileset({
-      url: './static/data/gz.json'
-    })
-    tileset.readyPromise.then(function (tileset) {
-      viewer.scene.primitives.add(tileset)
-      viewer.zoomTo(tileset)
-    })
+    // var tileset = new Cesium.Cesium3DTileset({
+    //   url: './static/data/gz.json'
+    // })
+    // tileset.readyPromise.then(function (tileset) {
+    //   viewer.scene.primitives.add(tileset)
+    //   viewer.zoomTo(tileset)
+    // })
   }
 })

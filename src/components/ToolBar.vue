@@ -1,5 +1,5 @@
 <template>
-  <div id="ToolBar.vue" class="iez-toolbar">
+  <div id="ToolBar" class="iez-toolbar">
    <div class="iez-buttons">
      <Button shape="circle" @click="layerManagerTrigger"  title="图层管理" class="  ivu-btn-circle ivu-btn-icon-only ">
        <Icon type="ios-settings-strong"></Icon>
@@ -31,6 +31,7 @@ import Icon from '../../node_modules/iview/src/components/icon/icon.vue'
 import Dropdown from '../../node_modules/iview/src/components/dropdown/dropdown.vue'
 import DropdownMenu from '../../node_modules/iview/src/components/dropdown/dropdown-menu.vue'
 import DropdownItem from '../../node_modules/iview/src/components/dropdown/dropdown-item.vue'
+import $ from '../../static/js/jquery-vendor'
 
 export default {
   components: {
@@ -46,6 +47,15 @@ export default {
       test: ['标绘', '测量', '盒子'],
       visible: false
     }
+  },
+  created () {
+    console.info('created')
+  },
+  mounted () {
+    // if ($('.cesium-viewer-toolbar').length > 0) {
+    //   console.info('已经渲染完毕')
+    // }
+    console.info('mounted about')
   },
   methods: {
     layerManagerTrigger: function () {
@@ -65,6 +75,7 @@ export default {
     },
     toolsTrigger: function () {
       this.$Message.info('常用工具')
+      this.$root.eventBus.$emit('getHeight', event.target)
     },
     // 拉列表自定义关闭
     dropDownCustomHandler: function () {

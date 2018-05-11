@@ -2,8 +2,8 @@
 .iez-toolbar {
   /*background-color:yellow;*/
   position: absolute;
-  left: 0;
-  top: 0;
+  left: 5px;
+  top: 5px;
   margin-left: -5px;
   z-index: 99;
 }
@@ -32,6 +32,19 @@
   -webkit-box-shadow: 0 0 8px #fff;
   -moz-box-shadow: 0 0 8px #fff;
   box-shadow: 0 0 8px #fff;
+}
+
+.iez-toolbar .iez-buttons .ivu-btn:active{
+  color: #000;
+  fill: #000;
+  background: #adf;
+  border-color: #fff;
+  -webkit-box-shadow: 0 0 8px #fff;
+  box-shadow: 0 0 8px #fff;
+}
+.iez-toolbar .iez-buttons .ivu-btn:focus {
+  border-color: #ea4;
+  outline: none;
 }
 .iez-dropmenu{
   /*background: rgba(0, 0, 0, 0.4);*/

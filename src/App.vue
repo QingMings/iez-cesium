@@ -20,7 +20,7 @@ export default {
     overflow: hidden;
   }
   /*隐藏cesium 下部bind map的文字提示 */
-  .cesium-viewer-bottom{
+   #cesiumContainer .cesium-viewer .cesium-viewer-bottom{
     display: none;
   }
 #app {
