@@ -13,15 +13,19 @@ import $ from '../static/js/jquery-vendor'
 import Layer from '../static/js/layer/layer'
 import './assets/iez-layer.css'
 import 'velocity-animate/velocity.min'
-
+import axiox from 'axios'
+import Vuex from 'vuex'
+import store from './vuex/store'
+Vue.use(Vuex)
 
 Vue.config.productionTip = false
 Vue.prototype.$Message = Message
 Vue.prototype.$layer = Layer
-
+Vue.prototype.$http = axiox
 /* eslint-disable no-new */
 var vm = new Vue({
   el: '#app',
+  store,
   router,
   components: {App},
   template: '<App/>',

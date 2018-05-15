@@ -4,20 +4,18 @@
       <span class="cd-modal-center"></span>
       <a href="#" @click="closeModel"  @keyup.13="closeModel" class="cd-modal-close"></a>
       <div class="cd-modal">
-        <!--<VueFrame></VueFrame>-->
-        <iframe id="rightFrame" style="width:100%;height:100%;overflow:hidden;margin:0" scrolling="no" frameborder="0"
-                <!--src="http://localhost:8080/360hot/senceServlet?dnid=58"-->
-        ></iframe>
+        <iframe :id="frame" style="width:100%;height:100%;overflow:hidden;margin:0" scrolling="no" frameborder="0" :src="frameUrl"></iframe>
       </div>
     </div>
 </template>
 <script type="text/javascript">
 import $ from '../../static/js/jquery-vendor'
-// import VueFrame
+
 export default {
   name: 'PanoramaView',
   data () {
     return {
+      frame: 'rightFrame'
     }
   },
   created () {
@@ -38,25 +36,27 @@ export default {
       }
     })
   },
+  computed: {
+    frameUrl () {
+      return this.$store.getters.getPanoramaUrl
+    }
+  },
   methods: {
+    loadIframe: function () {
+      var iframe = document.getElementById(this.frame)
+      iframe.src = this.frameUrl
+      iframe.onload = function () {
+        // console.log("iframe cargado...")
+      }
+    },
+    setframeUrl: function (url) {
+      this.$store.commit('updatePanoramaUrl', url)
+    },
     showPanorama: function (target) {
       var vm = this
       this.$Message.info('事件调用')
-      // var div = document.createElement('div')
-      // div.id = 'hello'
-      // div.style.display = ''
-      // div.style.width = 10 + 'px'
-      // div.style.height = 10 + 'px'
-      // var clientW = document.documentElement.clientWidth
-      // var clientH = document.documentElement.clientHeight
-      // var divW = div.offsetWidth
-      // var divH = div.offsetHeight
-      // var x = (clientW - divW) / 2
-      // var y = (clientH - divH)
-      // div.style.position = 'absolute'
-      // div.style.left = x + 'px'
-      // div.style.top = y + 'px'
-
+      this.setframeUrl(target)
+      this.loadIframe()
       var scaleValue = this.retrieveScale($('.cd-modal-bg'))
       $('.cd-modal-bg').addClass('is-visible').one('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function () {
         vm.animateLayer($('.cd-modal-bg'), scaleValue, true)

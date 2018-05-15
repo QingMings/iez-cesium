@@ -27,6 +27,7 @@ export default {
         timeline: false,
         navigationHelpButton: false,
         animation: false,
+        // infoBox: false,
         baseLayerPicker: false,
         sceneModePicker: false
       },
@@ -48,14 +49,17 @@ export default {
     // 使相机默认朝向中国
     Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(73, 4, 135, 53)
     this.viewer = new Cesium.Viewer('cesiumContainer', this.config)
+    this.removeDefaultEvent()
     this.load3dTiles()
     this.loadGeojson()
     this.showHight()
+    this.entityPick()
   },
   methods: {
+    // 加载geojson数据
     loadGeojson: function () {
       var vm = this
-      var serviceUrl = 'http://192.168.2.114:8080/360hot/GetPointsInfoServlet?sceneitems_id=58'
+      var serviceUrl = 'http://192.168.2.114:8084/360hot/GetPointsInfoServlet?sceneitems_id=58'
       var datasource1 = new Cesium.GeoJsonDataSource()
       var features = datasource1.load(serviceUrl)
       features.then(function (datasource) {
@@ -65,23 +69,73 @@ export default {
         for (var i = 0; i < vm.entities.length; i++) {
           var entity = vm.entities[i]
           entity.billboard = undefined
-          console.info(entity.position)
           entity.point = new Cesium.PointGraphics({
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
             color: Cesium.Color.RED,
             pixelSize: 10
           })
         }
       })
     },
+    // 加载 3dTiles
     load3dTiles: function () {
       var vm = this
+      var isMobile = {
+        Android: function () {
+          return navigator.userAgent.match(/Android/i)
+        },
+        BlackBerry: function () {
+          return navigator.userAgent.match(/BlackBerry/i)
+        },
+        iOS: function () {
+          return navigator.userAgent.match(/iPhone|iPad|iPod/i)
+        },
+        Opera: function () {
+          return navigator.userAgent.match(/Opera Mini/i)
+        },
+        Windows: function () {
+          return navigator.userAgent.match(/IEMobile/i)
+        },
+        any: function () {
+          return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows())
+        }
+      }
       var tileset = new Cesium.Cesium3DTileset({
-        url: 'http://192.168.2.114:8085/data/Scene/Cesium_3D.json'
+        url: 'http://192.168.2.114:8085/data/Scene/Cesium_3D.json',
+        maximumScreenSpaceError: isMobile.any() ? 8 : 1,
+        maximumNumberOfLoadedTiles: isMobile.any() ? 10 : 1000
       })
       tileset.readyPromise.then(function (tileset) {
         vm.viewer.scene.primitives.add(tileset)
         vm.viewer.zoomTo(tileset)
       })
+    },
+    // 实体点击事件 打开全景
+    entityPick: function (target) {
+      var vm = this
+      var clickHandler = new Cesium.ScreenSpaceEventHandler(this.viewer.scene.canvas)
+      clickHandler.setInputAction(function (click) {
+        var picked = vm.viewer.scene.pick(click.position) // 拾取实体
+        if (Cesium.defined(picked)) {
+          var pickEntity = Cesium.defaultValue(picked.id, picked.primitive.id)
+          if (pickEntity instanceof Cesium.Entity) {
+            vm.viewer.zoomTo(pickEntity).then(function () {
+              var props = pickEntity.properties
+              var currentTime = vm.viewer.clock.currentTime
+              var params = {
+                'Name': props.NAME.getValue(currentTime),
+                'sence_id': props.sence_id.getValue(currentTime),
+                'senceitems_id': props.senceitems_id.getValue(currentTime),
+                'group_id': props.group_id.getValue(currentTime)
+              }
+              vm.$root.eventBus.$emit('showPanorama', params) // 先缩放后打开全景
+            })
+          }
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
+    },
+    removeDefaultEvent: function (target) {
+      this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
     },
     getheight: function (target) {
       var vm = this
@@ -100,6 +154,7 @@ export default {
       var blob = new Blob([JSON.stringify(array)], {type: 'application/json'})
       FileSaver.saveAs(blob, 'point.json')
     },
+    // 鼠标悬浮显示模型高度
     showHight: function () {
       var vm = this
       var labelEntity = this.viewer.entities.add({
@@ -123,10 +178,8 @@ export default {
           var pickedObject = scene.pick(movement.endPosition)
           if (scene.pickPositionSupported && Cesium.defined(pickedObject)) {
             var cartesian = vm.viewer.scene.pickPosition(movement.endPosition)
-            console.info(cartesian)
             if (Cesium.defined(cartesian)) {
               var cartographic = Cesium.Cartographic.fromCartesian(cartesian)
-              console.info(cartographic)
               var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(2)
               var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(2)
               var heightString = cartographic.height.toFixed(2)
