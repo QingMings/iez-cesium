@@ -74,7 +74,7 @@ export default {
       })
     },
     toolsTrigger: function () {
-      this.$Message.info('常用工具')
+      this.$Message.info(this.$store.state.author)
       this.$root.eventBus.$emit('getHeight', event.target)
     },
     // 拉列表自定义关闭

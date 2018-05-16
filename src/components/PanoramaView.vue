@@ -4,12 +4,13 @@
       <span class="cd-modal-center"></span>
       <a href="#" @click="closeModel"  @keyup.13="closeModel" class="cd-modal-close"></a>
       <div class="cd-modal">
-        <iframe :id="frame" style="width:100%;height:100%;overflow:hidden;margin:0" scrolling="no" frameborder="0" :src="frameUrl"></iframe>
+        <iframe :id="frame" name="rightFrame" ref="rightFrame" style="width:100%;height:100%;overflow:hidden;margin:0" scrolling="no" frameborder="0" ></iframe>
       </div>
     </div>
 </template>
 <script type="text/javascript">
 import $ from '../../static/js/jquery-vendor'
+import IFramePost from '../utils/IframePost'
 
 export default {
   name: 'PanoramaView',
@@ -37,31 +38,44 @@ export default {
     })
   },
   computed: {
-    frameUrl () {
-      return this.$store.getters.getPanoramaUrl
+    framePostUrl () {
+      return this.$store.getters.getPanoramaPostUrl
+    },
+    postParams () {
+      return this.$store.getters.getPanoramaPostParams
     }
   },
   methods: {
+    // 加载frame
     loadIframe: function () {
-      var iframe = document.getElementById(this.frame)
-      iframe.src = this.frameUrl
-      iframe.onload = function () {
-        // console.log("iframe cargado...")
-      }
+      var vm = this
+      // var iframe = document.getElementById(this.frame)
+      // iframe.src = this.framePostUrl
+      // iframe.onload = function () {
+      //   // console.log("iframe cargado...")
+      // }
+      IFramePost.doPost({
+        Url: vm.framePostUrl,
+        Target: vm.$refs.rightFrame,
+        PostParams: vm.postParams
+      })
     },
-    setframeUrl: function (url) {
-      this.$store.commit('updatePanoramaUrl', url)
+    // 设置 post参数
+    setframeParam: function (params) {
+      this.$store.commit('updatePanoramaParams', params)
     },
+    // 显示全景
     showPanorama: function (target) {
       var vm = this
       this.$Message.info('事件调用')
-      this.setframeUrl(target)
+      this.setframeParam(target)
       this.loadIframe()
       var scaleValue = this.retrieveScale($('.cd-modal-bg'))
       $('.cd-modal-bg').addClass('is-visible').one('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function () {
         vm.animateLayer($('.cd-modal-bg'), scaleValue, true)
       })
     },
+    // 动画缩放效果
     retrieveScale: function (btn) {
       var btnRadius = btn.width() / 2
       var left = btn.offset().left + btnRadius
@@ -74,12 +88,14 @@ export default {
       }, 0)
       return scale
     },
+    // 动画缩放效果
     scaleValue: function (topValue, leftValue, radiusValue, windowW, windowH) {
       var maxDistHor, maxDistVert
       maxDistHor = (leftValue > windowW / 2) ? leftValue : (windowW - leftValue)
       maxDistVert = (topValue > windowH / 2) ? topValue : (windowH - topValue)
       return Math.ceil(Math.sqrt(Math.pow(maxDistHor, 2) + Math.pow(maxDistVert, 2)) / radiusValue)
     },
+    // 动画缩放效果
     animateLayer: function (layer, scaleVal, bool) {
       layer.velocity({ scale: scaleVal }, 400, function () {
         $('body').toggleClass('overflow-hidden', bool);
@@ -88,6 +104,7 @@ export default {
           : layer.removeClass('is-visible').removeAttr('style').siblings('[data-type="modal-trigger"]').removeClass('to-circle')
       })
     },
+    // 动画缩放效果
     updateLayer: function () {
       var layer = $('.cd-section.modal-is-visible').find('.cd-modal-bg')
       var layerRadius = layer.width() / 2
@@ -101,6 +118,7 @@ export default {
         scale: scale
       }, 0)
     },
+    // 关闭全景显示
     closeModel: function () {
       var vm = this
       var section = $('.cd-section.modal-is-visible')

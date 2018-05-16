@@ -13,6 +13,7 @@ import CesiumToolBarExtend from './CesiumToolBarExtend'
 import Cesium from 'cesium/Cesium'
 import 'cesium/Widgets/widgets.css'
 import FileSaver from 'file-saver'
+import api from '../../static/js/api'
 /* eslint-disable no-unused-vars */
 export default {
   components: {
@@ -49,11 +50,15 @@ export default {
     // 使相机默认朝向中国
     Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(73, 4, 135, 53)
     this.viewer = new Cesium.Viewer('cesiumContainer', this.config)
+    this.viewer.scene.debugShowFramesPerSecond = true
     this.removeDefaultEvent()
     this.load3dTiles()
     this.loadGeojson()
     this.showHight()
     this.entityPick()
+    for (var key in api) {
+      console.info(`key: ${key},value ${api[key]}`)
+    }
   },
   methods: {
     // 加载geojson数据
@@ -70,7 +75,7 @@ export default {
           var entity = vm.entities[i]
           entity.billboard = undefined
           entity.point = new Cesium.PointGraphics({
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            // disableDepthTestDistance: Number.POSITIVE_INFINITY,
             color: Cesium.Color.RED,
             pixelSize: 10
           })
@@ -101,7 +106,7 @@ export default {
         }
       }
       var tileset = new Cesium.Cesium3DTileset({
-        url: 'http://192.168.2.114:8085/data/Scene/Cesium_3D.json',
+        url: 'http://192.168.2.114:8084/360hot/data/Scene/Cesium_3D.json',
         maximumScreenSpaceError: isMobile.any() ? 8 : 1,
         maximumNumberOfLoadedTiles: isMobile.any() ? 10 : 1000
       })
@@ -134,6 +139,7 @@ export default {
         }
       }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
     },
+    // 移除默认双击事件
     removeDefaultEvent: function (target) {
       this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
     },
