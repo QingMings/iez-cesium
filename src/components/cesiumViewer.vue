@@ -3,6 +3,7 @@
       <tool-bar></tool-bar>
       <panorama-view></panorama-view>
       <CesiumToolBarExtend/>
+      <LocationBox  :location-info="location"></LocationBox>
     </div>
 
 </template>
@@ -14,9 +15,12 @@ import Cesium from 'cesium/Cesium'
 import 'cesium/Widgets/widgets.css'
 import FileSaver from 'file-saver'
 import api from '../../static/js/api'
+import LocationBox from './LocationBox'
+// import '../../static/js/viewerCesiumNavigationMixin'
 /* eslint-disable no-unused-vars */
 export default {
   components: {
+    LocationBox,
     CesiumToolBarExtend,
     PanoramaView,
     ToolBar},
@@ -33,11 +37,16 @@ export default {
         sceneModePicker: false
       },
       viewer: undefined,
-      entities: undefined
+      entities: undefined,
+      location: undefined
     }
   },
   created () {
-    // console.info('panorama created')
+    console.info('panorama created')
+    console.info(api)
+    // 初始化api配置
+    this.$store.commit('updateApi', api)
+    // console.info(this.$store.getters.state.api)
     // 监听showPanorama 方法 此方法由 ToolBar.vue 中的按钮触发,此事件在热部署中会多次执行，解决方案往下看
     // https://www.cnblogs.com/xiaochongchong/p/8127148.html
     this.$root.eventBus.$on('getHeight', this.getheight)
@@ -48,8 +57,10 @@ export default {
   },
   mounted () {
     // 使相机默认朝向中国
+    console.info('cesiumViewer')
     Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(73, 4, 135, 53)
     this.viewer = new Cesium.Viewer('cesiumContainer', this.config)
+    // Cesium.viewerCesiumNavigationMixin(this.viewer, {})
     this.viewer.scene.debugShowFramesPerSecond = true
     this.removeDefaultEvent()
     this.load3dTiles()
@@ -60,11 +71,26 @@ export default {
       console.info(`key: ${key},value ${api[key]}`)
     }
   },
+  computed: {
+    geojsonService () {
+      return this.$store.getters.getGeoJsonServiceUrl
+    },
+    modelTileService () {
+      return this.$store.getters.getModelTilesUrl
+    },
+    localtionReportService () {
+      return this.$store.getters.getlocaltionReportUrl
+    },
+    // 获得的用户信息
+    userinfo () {
+      return this.$store.getters.getUser
+    }
+  },
   methods: {
     // 加载geojson数据
     loadGeojson: function () {
       var vm = this
-      var serviceUrl = 'http://192.168.2.114:8084/360hot/GetPointsInfoServlet?sceneitems_id=58'
+      var serviceUrl = vm.geojsonService
       var datasource1 = new Cesium.GeoJsonDataSource()
       var features = datasource1.load(serviceUrl)
       features.then(function (datasource) {
@@ -74,8 +100,14 @@ export default {
         for (var i = 0; i < vm.entities.length; i++) {
           var entity = vm.entities[i]
           entity.billboard = undefined
+          // var text = entity.properties.NAME.getValue(vm.viewer.clock.currentTime)
+          // entity.label = {
+          //   text: text,
+          //   show: true
+          // }
+          // entity.label.show = true
           entity.point = new Cesium.PointGraphics({
-            // disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
             color: Cesium.Color.RED,
             pixelSize: 10
           })
@@ -106,7 +138,7 @@ export default {
         }
       }
       var tileset = new Cesium.Cesium3DTileset({
-        url: 'http://192.168.2.114:8084/360hot/data/Scene/Cesium_3D.json',
+        url: vm.modelTileService,
         maximumScreenSpaceError: isMobile.any() ? 8 : 1,
         maximumNumberOfLoadedTiles: isMobile.any() ? 10 : 1000
       })
@@ -152,9 +184,9 @@ export default {
         var canvasCoordinates = scene.cartesianToCanvasCoordinates(entityPosition) // cartesian2
         var cartesian = vm.viewer.scene.pickPosition(canvasCoordinates)
         var cartographic = Cesium.Cartographic.fromCartesian(cartesian)
-        var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(2)
-        var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(2)
-        var heightString = cartographic.height.toFixed(2)
+        var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(5)
+        var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(5)
+        var heightString = cartographic.height.toFixed(5)
         array.push({'name': entity.properties.NAME.getValue(vm.viewer.clock.currentTime), 'height': heightString})
       }
       var blob = new Blob([JSON.stringify(array)], {type: 'application/json'})
@@ -186,8 +218,8 @@ export default {
             var cartesian = vm.viewer.scene.pickPosition(movement.endPosition)
             if (Cesium.defined(cartesian)) {
               var cartographic = Cesium.Cartographic.fromCartesian(cartesian)
-              var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(2)
-              var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(2)
+              var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(5)
+              var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(5)
               var heightString = cartographic.height.toFixed(2)
 
               labelEntity.position = cartesian
@@ -200,6 +232,7 @@ export default {
               labelEntity.label.eyeOffset = new Cesium.Cartesian3(0.0, 0.0, -cartographic.height * (scene.mode === Cesium.SceneMode.SCENE2D ? 1.5 : 1.0))
 
               foundPosition = true
+              vm.location = `经度：${longitudeString} 纬度：${latitudeString} 高度：${heightString}m`
             }
           }
         }

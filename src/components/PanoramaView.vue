@@ -11,12 +11,14 @@
 <script type="text/javascript">
 import $ from '../../static/js/jquery-vendor'
 import IFramePost from '../utils/IframePost'
+import Porthole from 'porthole-proxy/lib/porthole.min'
 
 export default {
   name: 'PanoramaView',
   data () {
     return {
-      frame: 'rightFrame'
+      frame: 'rightFrame',
+      windowProxy: undefined
     }
   },
   created () {
@@ -24,10 +26,12 @@ export default {
     // 监听showPanorama 方法 此方法由 ToolBar.vue 中的按钮触发,此事件在热部署中会多次执行，解决方案往下看
     // https://www.cnblogs.com/xiaochongchong/p/8127148.html
     this.$root.eventBus.$on('showPanorama', this.showPanorama)
+    this.$root.eventBus.$on('message', this.message)
   },
   beforeDestroy () {
     // 防止多次触发
     this.$root.eventBus.$off('showPanorama', this.showPanorama)
+    this.$root.eventBus.$off('message', this.message)
   },
   mounted () {
     var vm = this
@@ -36,6 +40,13 @@ export default {
         window.requestAnimationFrame(vm.updateLayer)
       }
     })
+    vm.windowProxy = new Porthole.WindowProxy(
+      'http://' + location.host + '/360hot/proxy.html', 'rightFrame')
+    // porthole 消息接收函数，直接用vue 函数会报错，不知道为啥子
+    function onMessage (messageEvent) {
+      vm.onMessage(messageEvent)
+    }
+    vm.windowProxy.addEventListener(onMessage)
   },
   computed: {
     framePostUrl () {
@@ -43,9 +54,19 @@ export default {
     },
     postParams () {
       return this.$store.getters.getPanoramaPostParams
+    },
+    localtionReportService () {
+      return this.$store.getters.getlocaltionReportUrl
     }
   },
   methods: {
+    onMessage: function (messageEvent) {
+      console.info('message')
+    },
+    message: function (target) {
+      this.$Message.info('message 调用')
+      this.windowProxy.post({'action': 'supersizeme'})
+    },
     // 加载frame
     loadIframe: function () {
       var vm = this
@@ -54,6 +75,13 @@ export default {
       // iframe.onload = function () {
       //   // console.log("iframe cargado...")
       // }
+      // 上报 用户当前场景信息
+      vm.$http.post(vm.localtionReportService, {data: vm.postParams})
+        .then(function () {
+        }).catch(function (error) {
+          vm.$Message.warn(error)
+        })
+      // 打开全景
       IFramePost.doPost({
         Url: vm.framePostUrl,
         Target: vm.$refs.rightFrame,

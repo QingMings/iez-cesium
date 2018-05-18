@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import axios from 'axios'
 
 Vue.use(Vuex)
 
@@ -7,14 +8,12 @@ const store = new Vuex.Store({
   // 定义状态
   state: {
     author: 'Wise Wrong',
-    url: 'http://192.168.2.114:8084/360hot/senceServlet',
     panoramaParams: {
       Name: '',
       sence_id: '',
       senceitems_id: '',
       group_id: ''
-    }, // 服务地址
-    modelTilesUrl: 'http://192.168.2.114:8084/360hot/data/Scene/Cesium_3D.json',
+    },
     // 用户信息缓存
     user: {
       userCode: 'test',
@@ -23,8 +22,26 @@ const store = new Vuex.Store({
       userPic: 'test'
     },
     api: {
-      userInfo: 'http://'
-    }
+      geojsonServiceUrl: '',
+      //  全景服务地址
+      panoramaUrl: '',
+      // 3dTiles 服务地址
+      modelTilesUrl: '',
+      // 用户信息获取地址
+      userInfo: ``,
+      // 上报位置接口
+      localtionReport: ``,
+      // 报警地址查询服务
+      warningIpQueryUrl: ``,
+      // 报警IP 端口
+      warningServer: {
+        ip: '',
+        port: ''
+      },
+      //  报警 websocket 地址
+      warningUrl: ``
+    },
+    warning: []
   },
   mutations: {
     //  post参数
@@ -33,28 +50,43 @@ const store = new Vuex.Store({
     },
     // 设置3dTiles地址
     updateModelTilesUrl (state, url) {
-      state.modelTilesUrl = url
+      state.api.modelTilesUrl = url
     },
     // 更新用户信息
     updateUser  (state, userInfo) {
       state.user = userInfo
+    },
+    // 更新 api配置
+    updateApi (state, config) {
+      state.api.userInfo = config.userInfo
+      state.api.localtionReport = config.localtionReport
+      state.api.warningIpQueryUrl = config.warningIpQueryUrl
+      state.api.panoramaUrl = config.panoramaUrl
+      state.api.modelTilesUrl = config.modelTilesUrl
+      state.api.geojsonServiceUrl = config.geojsonServiceUrl
+    },
+    // 更新 warning Server 地址
+    updateWarningServer (state, serverConfig) {
+      state.api.warningServer.ip = serverConfig.ip
+      state.api.warningServer.port = serverConfig.port
     }
   },
   getters: {
-    // 获取服务地址
-    getPanoramaUrl: (state) => {
-      return `${state.url}dnid=${state.panoramaParams.sence_id}&NAME=${state.panoramaParams.Name}&senceitems_id=${state.panoramaParams.senceitems_id}&group_id=${state.panoramaParams.group_id}`
+    // Geojson 服务地址
+    getGeoJsonServiceUrl: (state) => {
+      return state.api.geojsonServiceUrl
     },
+    // 获取服务地址
     getPanoramaPostUrl: (state) => {
-      return `${state.url}`
+      return state.api.panoramaUrl
     },
     // post 参数
     getPanoramaPostParams: (state) => {
       return {
-        Name: state.panoramaParams.Name,
+        name: state.panoramaParams.Name,
         dnid: state.panoramaParams.sence_id,
-        senceitems_id: state.panoramaParams.senceitems_id,
-        group_id: state.panoramaParams.group_id,
+        senceitemsId: state.panoramaParams.senceitems_id,
+        groupId: state.panoramaParams.group_id,
         userCode: state.user.userCode,
         userName: state.user.userName,
         roleName: state.user.roleName,
@@ -62,8 +94,29 @@ const store = new Vuex.Store({
       }
     },
     // 获取3dTiles服务地址
-    getModelUrl: (state) => {
-      return state.modelTilesUrl
+    getModelTilesUrl: (state) => {
+      return state.api.modelTilesUrl
+    },
+    // 获取报警 地址查询地址
+    getWarningQueryUrl: (state) => {
+      return state.api.warningIpQueryUrl
+    },
+    getUserInfoUrl: (state) => {
+      return state.api.userInfo
+    },
+    getlocaltionReportUrl: (state) => {
+      return state.api.localtionReport
+    },
+    // 获取报警 websocket地址
+    getWarningUrl: (state) => {
+      return `ws://${state.api.warningServer.ip}:${state.api.warningServer.port}`
+    },
+    // 获取 uesr 信息
+    getUser: (state) => {
+      return state.user
+    },
+    getWarningSize: (state) => {
+      return state.warning.length
     }
   }
 })

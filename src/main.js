@@ -34,6 +34,7 @@ var vm = new Vue({
       eventBus: new Vue()
     }
   },
+  created () {},
   mounted () {
     console.info('app  mounted')
     // var viewer = new Cesium.CesiumWidget('cesiumContainer')

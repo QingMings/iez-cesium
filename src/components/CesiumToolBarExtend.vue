@@ -3,7 +3,7 @@
      <div class="iez-profile-photo">
        <div class="demo-avatar-badge" @click="showWarning">
          <Badge :count="infos"  overflow-count="99">
-           <Avatar shape="square" icon="person"  :src="profilePhotoSrc" />
+           <Avatar shape="square" icon="person"  :src="userinfo.userPic" />
 
          </Badge>
        </div>
@@ -23,8 +23,20 @@ export default {
   name: 'CesiumToolBarExtend',
   data () {
     return {
-      infos: 0, // 消息数量
-      profilePhotoSrc: 'https://i.loli.net/2017/08/21/599a521472424.jpg' // 头像信息
+    }
+  },
+  computed: {
+    // 获取用户信息url
+    userApi () {
+      return this.$store.getters.getUserInfoUrl
+    },
+    // 获得的用户信息
+    userinfo () {
+      return this.$store.getters.getUser
+    },
+    // 获得的报警信息
+    infos () {
+      return this.$store.getters.getWarningSize
     }
   },
   mounted () {
@@ -37,11 +49,24 @@ export default {
     },
     // 请求用户信息
     requestUesrInfo: function (target) {
+      var vm = this
       var identity = this.$route.query.uid
       if (Cesium.defined(identity)) {
         this.$Message.info(identity)
+        this.$http.get(this.userApi, {params: { uid: identity }})
+          .then(function (res) {
+            if (res.data.result === '0') {
+              vm.$store.commit('updateUser', res.data.resultMess)
+            } else {
+              vm.$Message.warn(res.data.resultMess)
+              console.warn(res.data.resultMess)
+            }
+          }).catch(function (err) {
+            console.error(err)
+          })
       } else {
         this.$Message.info('uid not exists')
+        console.error('uid not exists')
       }
     }
   }

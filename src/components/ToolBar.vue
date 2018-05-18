@@ -75,7 +75,7 @@ export default {
     },
     toolsTrigger: function () {
       this.$Message.info(this.$store.state.author)
-      this.$root.eventBus.$emit('getHeight', event.target)
+      this.$root.eventBus.$emit('message', event.target)
     },
     // 拉列表自定义关闭
     dropDownCustomHandler: function () {
