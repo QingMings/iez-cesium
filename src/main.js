@@ -16,7 +16,9 @@ import 'velocity-animate/velocity.min'
 import axiox from 'axios'
 import Vuex from 'vuex'
 import store from './vuex/store'
+
 Vue.use(Vuex)
+
 
 Vue.config.productionTip = false
 Vue.prototype.$Message = Message

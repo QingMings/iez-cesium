@@ -3,6 +3,7 @@
 </template>
 
 <script>
+// 显示 经纬度位置信息
 export default {
   props: ['locationInfo'],
   name: 'LocationBox'

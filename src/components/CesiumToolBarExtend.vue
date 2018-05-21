@@ -1,7 +1,7 @@
 <template>
     <div id="CesiumToolBarExtend" class="iez-toolbar-right">
      <div class="iez-profile-photo">
-       <div class="demo-avatar-badge" @click="showWarning">
+       <div class="demo-avatar-badge" @click="showWarning" :title="userinfo.userName">
          <Badge :count="infos"  overflow-count="99">
            <Avatar shape="square" icon="person"  :src="userinfo.userPic" />
 
@@ -52,7 +52,6 @@ export default {
       var vm = this
       var identity = this.$route.query.uid
       if (Cesium.defined(identity)) {
-        this.$Message.info(identity)
         this.$http.get(this.userApi, {params: { uid: identity }})
           .then(function (res) {
             if (res.data.result === '0') {
@@ -62,11 +61,12 @@ export default {
               console.warn(res.data.resultMess)
             }
           }).catch(function (err) {
-            console.error(err)
+            vm.$Message.error(`获取用户信息失败：${err}`)
+            console.error(`获取用户信息失败：${err}`)
           })
       } else {
-        this.$Message.info('uid not exists')
-        console.error('uid not exists')
+        this.$Message.info('uid 参数不存在')
+        console.error('uid 参数不存在')
       }
     }
   }

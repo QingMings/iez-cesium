@@ -67,8 +67,8 @@ const store = new Vuex.Store({
     },
     // 更新 warning Server 地址
     updateWarningServer (state, serverConfig) {
-      state.api.warningServer.ip = serverConfig.ip
-      state.api.warningServer.port = serverConfig.port
+      state.api.warningServer.ip = serverConfig.IP
+      state.api.warningServer.port = serverConfig.PORT
     }
   },
   getters: {

@@ -43,10 +43,9 @@ export default {
     vm.windowProxy = new Porthole.WindowProxy(
       'http://' + location.host + '/360hot/proxy.html', 'rightFrame')
     // porthole 消息接收函数，直接用vue 函数会报错，不知道为啥子
-    function onMessage (messageEvent) {
+    vm.windowProxy.addEventListener(function (messageEvent) {
       vm.onMessage(messageEvent)
-    }
-    vm.windowProxy.addEventListener(onMessage)
+    })
   },
   computed: {
     framePostUrl () {
@@ -61,7 +60,12 @@ export default {
   },
   methods: {
     onMessage: function (messageEvent) {
-      console.info('message')
+      var vm = this
+      if (messageEvent.data['action'] === 'updatePanoramaParams') {
+        // 更新全景参数 用于全景内跳转点的位置上报
+        vm.setframeParam(messageEvent.data['data'])
+        vm.localtionReport()
+      }
     },
     message: function (target) {
       this.$Message.info('message 调用')
@@ -70,23 +74,25 @@ export default {
     // 加载frame
     loadIframe: function () {
       var vm = this
-      // var iframe = document.getElementById(this.frame)
-      // iframe.src = this.framePostUrl
-      // iframe.onload = function () {
-      //   // console.log("iframe cargado...")
-      // }
       // 上报 用户当前场景信息
-      vm.$http.post(vm.localtionReportService, {data: vm.postParams})
-        .then(function () {
-        }).catch(function (error) {
-          vm.$Message.warn(error)
-        })
+      vm.localtionReport()
       // 打开全景
       IFramePost.doPost({
         Url: vm.framePostUrl,
         Target: vm.$refs.rightFrame,
         PostParams: vm.postParams
       })
+    },
+    // 上报 用户当前场景信息
+    localtionReport: function () {
+      var vm = this
+      // 上报 用户当前场景信息
+      vm.$http.post(vm.localtionReportService, {data: vm.postParams})
+        .then(function () {
+        }).catch(function (error) {
+          // vm.$Message.warn(`上报用户位置信息出错${error}`)
+          console.info(`上报用户位置信息出错${error}`)
+        })
     },
     // 设置 post参数
     setframeParam: function (params) {
