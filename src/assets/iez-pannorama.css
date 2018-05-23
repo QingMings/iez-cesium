@@ -72,12 +72,13 @@ a {
   visibility: visible;
 }
 .cd-modal-close {
+  /*border: 1.6px solid #666567;*/
   position: fixed;
   z-index: 101;
-  top: 20px;
-  right: 5%;
-  height: 50px;
-  width: 50px;
+  top: 178px;
+  right: 16px;
+  height: 41px;
+  width: 41px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.3) url("./cd-icon-close.svg") no-repeat center center;
   /* image replacement */
@@ -120,7 +121,7 @@ a {
 
 @media only screen and (min-width: 768px) {
   .cd-modal-close {
-    top: 70px;
+    top: 178px;
   }
 }
 

@@ -13,7 +13,9 @@ const api = {
   // 上报位置接口
   localtionReport: `${baseUrl}/localtionReport`,
   // 报警地址查询服务
-  warningIpQueryUrl: `${baseUrl}/warningAddr`
+  warningIpQueryUrl: `${baseUrl}/warningAddr`,
+  // 历史报警信息接口
+  historyWarningsUrl: `${baseUrl}/historyWarnings`
 }
 
 export default api

@@ -68,7 +68,7 @@ export default {
       }
     },
     message: function (target) {
-      this.$Message.info('message 调用')
+      // this.$Message.info('message 调用')
       this.windowProxy.post({'action': 'supersizeme'})
     },
     // 加载frame
@@ -101,7 +101,6 @@ export default {
     // 显示全景
     showPanorama: function (target) {
       var vm = this
-      this.$Message.info('事件调用')
       this.setframeParam(target)
       this.loadIframe()
       var scaleValue = this.retrieveScale($('.cd-modal-bg'))

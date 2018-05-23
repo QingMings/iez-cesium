@@ -15,6 +15,9 @@
   top: 10px;
   right: 52px;
 }
+#cesiumContainer .cesium-viewer .cesium-viewer-toolbar .cesium-viewer-geocoderContainer{
+  top:2px;
+}
 .iez-profile-photo .demo-avatar-badge .ivu-avatar{
   background: #303336;
   cursor: pointer;

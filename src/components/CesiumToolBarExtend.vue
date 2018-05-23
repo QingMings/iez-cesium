@@ -8,13 +8,29 @@
          </Badge>
        </div>
      </div>
+      <div id="warnContent" style="display: none;">
+        <table class="mytable">
+
+          <tr class="header">
+            <td>仪表号</td>
+            <td>操作</td>
+          </tr>
+          <tr v-for="(item, index) in warnings" :key="index">
+            <td>{{item.devCode}}</td>
+            <td>
+              <a href="#" v-on:click="updateu(item.devCode)">查看</a>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
 </template>
 <script type="text/javascript">
 import Badge from '../../node_modules/iview/src/components/badge/badge.vue'
 import Avatar from '../../node_modules/iview/src/components/avatar/avatar.vue'
 import Cesium from 'cesium/Cesium'
-
+import $ from '../../static/js/jquery-vendor'
+// import Vue from 'vue'
 export default {
   components: {
     Badge,
@@ -23,6 +39,7 @@ export default {
   name: 'CesiumToolBarExtend',
   data () {
     return {
+
     }
   },
   computed: {
@@ -37,6 +54,9 @@ export default {
     // 获得的报警信息
     infos () {
       return this.$store.getters.getWarningSize
+    },
+    warnings () {
+      return this.$store.getters.getWarnings
     }
   },
   mounted () {
@@ -44,8 +64,21 @@ export default {
   },
   methods: {
     showWarning: function () {
-      this.infos = 100
-      console.info(this.infos)
+      var vm = this
+      this.$layer.open({
+        type: 1,
+        title: '仪表报警信息',
+        shadeClose: false,
+        resize: false,
+        offset: 'custom',
+        shade: 0, // 关闭遮罩
+        btn: [], // 不显示按钮
+        content: $('#warnContent'),
+        success: function (index, layero) {
+          console.info(index)
+          console.info(layero)
+        }
+      })
     },
     // 请求用户信息
     requestUesrInfo: function (target) {
@@ -74,4 +107,7 @@ export default {
 </script>
 <style>
 @import '../assets/iez-profie-photo.css';
+.mytable  td{
+  padding: 0px 13px;
+}
 </style>

@@ -1,8 +1,25 @@
-/*更改layer弹出框为透明样式*/
+ /*更改layer弹出框为透明样式*/
 .layui-layer-dialog {
   background: rgba(23, 20, 20, 0.5);
 }
+.layui-layer-page {
+  background: rgba(23, 20, 20, 0.5);
+  border: 1px solid rgba(66, 199, 199, 0.63);
+}
+.layui-layer-page .layui-layer-content{
+   color:#fff;
+ }
 
+ .layui-layer-page .layui-layer-content {
+   position: relative;
+   padding: 20px;
+   line-height: 24px;
+   word-break: break-all;
+   overflow: hidden;
+   font-size: 14px;
+   overflow-x: hidden;
+   overflow-y: auto;
+ }
 .layui-layer-title {
   background-color: rgba(162, 149, 149, 0.06);
   border-bottom: 1px solid #aaeeff82;

@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import axios from 'axios'
 
 Vue.use(Vuex)
 
@@ -39,9 +38,10 @@ const store = new Vuex.Store({
         port: ''
       },
       //  报警 websocket 地址
-      warningUrl: ``
+      warningUrl: ``,
+      historyWarningsUrl: ''
     },
-    warning: []
+    warning: [{devCode: '123'}, {devCode: '234'}, {devCode: '2364'}]
   },
   mutations: {
     //  post参数
@@ -64,6 +64,7 @@ const store = new Vuex.Store({
       state.api.panoramaUrl = config.panoramaUrl
       state.api.modelTilesUrl = config.modelTilesUrl
       state.api.geojsonServiceUrl = config.geojsonServiceUrl
+      state.api.historyWarningsUrl = config.historyWarningsUrl
     },
     // 更新 warning Server 地址
     updateWarningServer (state, serverConfig) {
@@ -101,9 +102,11 @@ const store = new Vuex.Store({
     getWarningQueryUrl: (state) => {
       return state.api.warningIpQueryUrl
     },
+    // 用户信息查询地址
     getUserInfoUrl: (state) => {
       return state.api.userInfo
     },
+    // 用户位置上报地址
     getlocaltionReportUrl: (state) => {
       return state.api.localtionReport
     },
@@ -111,13 +114,23 @@ const store = new Vuex.Store({
     getWarningUrl: (state) => {
       return `ws://${state.api.warningServer.ip}:${state.api.warningServer.port}`
     },
+    // 获取历史报警信息地址
+    gethistoryWarningsUrl: (state) => {
+      return state.api.historyWarningsUrl
+    },
     // 获取 uesr 信息
     getUser: (state) => {
       return state.user
     },
+    // 报警消息数量
     getWarningSize: (state) => {
       return state.warning.length
+    },
+    // 报警信息
+    getWarnings: (state) => {
+      return state.warning
     }
+
   }
 })
 

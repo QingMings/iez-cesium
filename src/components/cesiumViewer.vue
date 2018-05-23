@@ -1,6 +1,6 @@
 <template>
     <div id="cesiumContainer">
-      <!--<tool-bar></tool-bar>-->
+      <tool-bar></tool-bar>
       <panorama-view></panorama-view>
       <CesiumToolBarExtend/>
       <!--<LocationBox  :location-info="location"></LocationBox>-->
@@ -8,7 +8,6 @@
 
 </template>
 <script type="text/javascript">
-import Vue from 'vue'
 import ToolBar from './ToolBar.vue'
 import PanoramaView from './PanoramaView.vue'
 import CesiumToolBarExtend from './CesiumToolBarExtend'
@@ -18,6 +17,7 @@ import FileSaver from 'file-saver'
 import api from '../../static/js/api'
 import LocationBox from './LocationBox'
 import io from 'socket.io-client'
+// import LocalGeocoder from '../utils/LocalGeocoder'
 // import '../../static/js/viewerCesiumNavigationMixin'
 /* eslint-disable no-unused-vars */
 export default {
@@ -35,7 +35,7 @@ export default {
         navigationHelpButton: false,
         animation: false,
         homeButton: false,
-        // infoBox: false,
+        infoBox: false,
         baseLayerPicker: false,
         sceneModePicker: false
       },
@@ -62,10 +62,10 @@ export default {
     // 使相机默认朝向中国
 
     Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(73, 4, 135, 53)
-    Cesium.BingMapsApi.defaultKey = ''
+    // Cesium.BingMapsApi.defaultKey = ''
     this.viewer = new Cesium.Viewer('cesiumContainer', this.config)
     // Cesium.viewerCesiumNavigationMixin(this.viewer, {})
-    // this.viewer.scene.debugShowFramesPerSecond = true
+    this.viewer.scene.debugShowFramesPerSecond = true
     this.removeDefaultEvent()
     this.load3dTiles()
     this.loadGeojson()
@@ -103,21 +103,44 @@ export default {
         vm.viewer.dataSources.add(datasource)
         vm.viewer.zoomTo(datasource)
         vm.entities = datasource.entities.values
+        // vm.config.geocoder.updateArr(vm)
         for (var i = 0; i < vm.entities.length; i++) {
           var entity = vm.entities[i]
-          entity.billboard = undefined
-          // var text = entity.properties.NAME.getValue(vm.viewer.clock.currentTime)
-          // entity.label = {
-          //   text: text,
-          //   show: true
-          // }
-          // entity.label.show = true
-          entity.point = new Cesium.PointGraphics({
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
-            color: Cesium.Color.RED,
-            pixelSize: 10
-          })
+          entity.billboard = {
+            image: '../../static/webcam.png', // default: undefined
+            show: true,
+            color: Cesium.Color.LIME,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY
+          }
+          // entity.point = new Cesium.PointGraphics({
+          //   disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          //   color: Cesium.Color.RED,
+          //   pixelSize: 10
+          // })
         }
+      }).then(function () {
+        // 添加html元素
+        for (let i = 0; i < vm.entities.length; i++) {
+          var entity = vm.entities[i]
+          var span = document.createElement('span')
+          span.id = entity.id
+          span.textContent = entity.id
+          span.style.position = 'absolute'
+          span.className += ' ' + 'iez-point'
+          document.body.appendChild(span)
+        }
+        vm.viewer.scene.preRender.addEventListener(function () {
+          for (let i = 0; i < vm.entities.length; i++) {
+            var entity = vm.entities[i]
+            var position = entity.position.getValue(vm.viewer.clock.currentTime)
+            var canvasPosition = vm.viewer.scene.cartesianToCanvasCoordinates(position)
+            var span = document.getElementById(entity.id)
+            if (Cesium.defined(canvasPosition)) {
+              span.style.top = canvasPosition.y - 45 + 'px'
+              span.style.left = canvasPosition.x - 10 + 'px'
+            }
+          }
+        })
       }).otherwise(function (err) {
         vm.$Message.error(`请求 GeoJson服务失败: ${err}`)
         console.error(`请求 GeoJson服务失败: ${err}`)
@@ -207,6 +230,7 @@ export default {
     // 鼠标悬浮显示模型高度
     showHight: function () {
       var vm = this
+      var pinkid
       // Mouse over the globe to see the cartographic position
       var handler = new Cesium.ScreenSpaceEventHandler(this.viewer.scene.canvas)
       handler.setInputAction(function (movement) {
@@ -222,6 +246,22 @@ export default {
               var heightString = cartographic.height.toFixed(2)
               vm.location = `经度：${longitudeString} 纬度：${latitudeString} 高度：${heightString}m`
             }
+
+            var pickEntity = Cesium.defaultValue(pickedObject.id, pickedObject.primitive.id)
+            if (pickEntity instanceof Cesium.Entity) {
+              if (pinkid !== undefined) {
+                var lastspan = document.getElementById(pinkid)
+                lastspan.style.display = 'none'
+              }
+              pinkid = pickEntity.id
+              var span = document.getElementById(pickEntity.id)
+              span.style.display = 'block'
+            } else {
+              if (pinkid !== undefined) {
+                var span1 = document.getElementById(pinkid)
+                span1.style.display = 'none'
+              }
+            }
           } else {
             vm.location = ''
           }
@@ -233,7 +273,7 @@ export default {
       vm.$http.get(vm.warningQueryService).then(function (res) {
         if (res.data.result === '0') {
           vm.$store.commit('updateWarningServer', res.data.resultMess)
-          vm.warningMonitoring()
+          // vm.warningMonitoring()
         }
       })
     },
@@ -245,8 +285,13 @@ export default {
         console.info(socket.id)
         socket.emit('sendMessage', 'helloworld')
       })
-      socket.on('receiveMessage', function (data) {
+      // 报警
+      socket.on('warn', function (data) {
         console.info(data)
+      })
+      // 消除报警
+      socket.on('rmWarn', function (data) {
+
       })
     }
 
@@ -254,5 +299,16 @@ export default {
 }
 </script>
 <style>
-
+.iez-point{
+  border-radius: 3px;
+  position: absolute;
+  font-size: 13px;
+  display: none;
+  background: black;
+  opacity: 0.7;
+  padding: 7px;
+  outline: 3px #b6c0c3 solid;
+  color: white;
+  z-index: 99;
+}
 </style>
