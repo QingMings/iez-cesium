@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import '../utils/ArrayExt'
 
 Vue.use(Vuex)
 
@@ -15,10 +16,10 @@ const store = new Vuex.Store({
     },
     // 用户信息缓存
     user: {
-      userCode: 'test',
-      userName: 'test',
-      roleName: 'test',
-      userPic: 'test'
+      userCode: 'default',
+      userName: 'default',
+      roleName: 'default',
+      userPic: 'static/default.jpg'
     },
     api: {
       geojsonServiceUrl: '',
@@ -26,6 +27,8 @@ const store = new Vuex.Store({
       panoramaUrl: '',
       // 3dTiles 服务地址
       modelTilesUrl: '',
+
+      sceneInfoUrl: '',
       // 用户信息获取地址
       userInfo: ``,
       // 上报位置接口
@@ -39,9 +42,11 @@ const store = new Vuex.Store({
       },
       //  报警 websocket 地址
       warningUrl: ``,
-      historyWarningsUrl: ''
+      historyWarningsUrl: '',
+      meterViewUrl: '',
+      locationsUrl: ''
     },
-    warning: [{devCode: '123'}, {devCode: '234'}, {devCode: '2364'}]
+    warning: []
   },
   mutations: {
     //  post参数
@@ -63,13 +68,25 @@ const store = new Vuex.Store({
       state.api.warningIpQueryUrl = config.warningIpQueryUrl
       state.api.panoramaUrl = config.panoramaUrl
       state.api.modelTilesUrl = config.modelTilesUrl
+      state.api.sceneInfoUrl = config.sceneInfoUrl
       state.api.geojsonServiceUrl = config.geojsonServiceUrl
       state.api.historyWarningsUrl = config.historyWarningsUrl
+      state.api.meterViewUrl = config.meterViewUrl
+      state.api.locationsUrl = config.locationsUrl
     },
     // 更新 warning Server 地址
     updateWarningServer (state, serverConfig) {
       state.api.warningServer.ip = serverConfig.IP
       state.api.warningServer.port = serverConfig.PORT
+    },
+    // 添加报警
+    addWarning (state, warning) {
+      state.warning.push(warning)
+    },
+    // 移除报警
+    removeWarning (state, warning) {
+      console.info(warning)
+      state.warning.remove(warning)
     }
   },
   getters: {
@@ -98,6 +115,10 @@ const store = new Vuex.Store({
     getModelTilesUrl: (state) => {
       return state.api.modelTilesUrl
     },
+    // 获取场景信息服务
+    getSceneInfoUrl: (state) => {
+      return state.api.sceneInfoUrl
+    },
     // 获取报警 地址查询地址
     getWarningQueryUrl: (state) => {
       return state.api.warningIpQueryUrl
@@ -117,6 +138,13 @@ const store = new Vuex.Store({
     // 获取历史报警信息地址
     gethistoryWarningsUrl: (state) => {
       return state.api.historyWarningsUrl
+    },
+    // 获取动态页面进行展示
+    getMeterViewUrl: (state) => {
+      return state.api.meterViewUrl
+    },
+    getLocationsUrl: (state) => {
+      return state.api.locationsUrl
     },
     // 获取 uesr 信息
     getUser: (state) => {

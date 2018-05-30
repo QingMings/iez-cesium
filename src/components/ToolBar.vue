@@ -4,9 +4,15 @@
      <Button shape="circle" @click="layerManagerTrigger"  title="图层管理" class="  ivu-btn-circle ivu-btn-icon-only ">
        <Icon type="ios-settings-strong"></Icon>
      </Button>
+     <Button shape="circle" title="工具" @click="toolsTrigger1" class="ivu-btn-circle ivu-btn-icon-only ">
+       <Icon type="android-menu"></Icon>
+     </Button>
     <Button shape="circle" title="工具" @click="toolsTrigger" class="ivu-btn-circle ivu-btn-icon-only ">
       <Icon type="android-menu"></Icon>
     </Button>
+     <Button shape="circle" title="工具" @click="toolsTrigger2" class="ivu-btn-circle ivu-btn-icon-only ">
+       <Icon type="android-menu"></Icon>
+     </Button>
      <Dropdown trigger="custom" :visible="visible" placement="bottom-start">
        <Button shape="circle" title="常用工具" @click="dropDownCustomHandler" class="ivu-btn-circle ivu-btn-icon-only ">
          <Icon type="android-menu"></Icon>
@@ -75,7 +81,18 @@ export default {
     },
     toolsTrigger: function () {
       this.$Message.info(this.$store.state.author)
-      this.$root.eventBus.$emit('message', event.target)
+      this.$root.eventBus.$emit('adddTest', {devCode: 'm193.27564612095401'})
+      // this.$store.commit('addWarning', {devCode: 'm193.27564612095401'})
+    },
+    toolsTrigger1: function () {
+      this.$Message.info(this.$store.state.author)
+      this.$root.eventBus.$emit('getHeight')
+      // this.$store.commit('addWarning', {devCode: 'm193.27564612095401'})
+    },
+    toolsTrigger2: function () {
+      this.$Message.info(this.$store.state.author)
+      this.$root.eventBus.$emit('removeTest', {devCode: 'm193.27564612095401'})
+      // this.$store.commit('removeWarning', {devCode: 'm193.27564612095401'})
     },
     // 拉列表自定义关闭
     dropDownCustomHandler: function () {

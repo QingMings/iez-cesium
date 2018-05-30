@@ -2,7 +2,7 @@
     <div id="PanoramaView" class="cd-section">
       <span class="cd-modal-bg" style=""></span>
       <span class="cd-modal-center"></span>
-      <a href="#" @click="closeModel"  @keyup.13="closeModel" class="cd-modal-close"></a>
+      <a  @click="closeModel"  @keyup.13="closeModel" class="cd-modal-close"></a>
       <div class="cd-modal">
         <iframe :id="frame" name="rightFrame" ref="rightFrame" style="width:100%;height:100%;overflow:hidden;margin:0" scrolling="no" frameborder="0" ></iframe>
       </div>
@@ -22,16 +22,19 @@ export default {
     }
   },
   created () {
-    console.info('panorama created')
     // 监听showPanorama 方法 此方法由 ToolBar.vue 中的按钮触发,此事件在热部署中会多次执行，解决方案往下看
     // https://www.cnblogs.com/xiaochongchong/p/8127148.html
     this.$root.eventBus.$on('showPanorama', this.showPanorama)
+    // iframe 通信
     this.$root.eventBus.$on('message', this.message)
+    // 打开报警表全景
+    this.$root.eventBus.$on('showWarnPanorama', this.showWarnPanorama)
   },
   beforeDestroy () {
     // 防止多次触发
     this.$root.eventBus.$off('showPanorama', this.showPanorama)
     this.$root.eventBus.$off('message', this.message)
+    this.$root.eventBus.$off('showWarnPanorama', this.showWarnPanorama)
   },
   mounted () {
     var vm = this
@@ -54,8 +57,20 @@ export default {
     postParams () {
       return this.$store.getters.getPanoramaPostParams
     },
+    sceneInfoService () {
+      return this.$store.getters.getSceneInfoUrl
+    },
     localtionReportService () {
       return this.$store.getters.getlocaltionReportUrl
+    },
+    warnings () {
+      return this.$store.getters.getWarnings
+    },
+    getMeterViewService () {
+      return this.$store.getters.getMeterViewUrl
+    },
+    getlocationsService() {
+      return this.$store.getters.getLocationsUrl
     }
   },
   methods: {
@@ -66,10 +81,22 @@ export default {
         vm.setframeParam(messageEvent.data['data'])
         vm.localtionReport()
       }
+      // 请求报警信息
+      if (messageEvent.data['action'] === 'queryWarnings') {
+        vm.message({action: 'warnings', target: vm.warnings})
+      }
+      //  返回仪表动态页面url
+      if (messageEvent.data['action'] === 'getMeterView') {
+        vm.message({action: 'meterView', target: vm.getMeterViewService})
+      }
+      if (messageEvent.data['action'] === 'getlocationsUrl') {
+        vm.message({action: 'locations', target: vm.getlocationsService})
+      }
     },
-    message: function (target) {
+    //   send info to iframe page
+    message: function (params) {
       // this.$Message.info('message 调用')
-      this.windowProxy.post({'action': 'supersizeme'})
+      this.windowProxy.post({'action': params.action, 'data': params.target})
     },
     // 加载frame
     loadIframe: function () {
@@ -103,9 +130,45 @@ export default {
       var vm = this
       this.setframeParam(target)
       this.loadIframe()
+      this.openPanorama()
+    },
+    // 显示全景遮罩
+    openPanorama: function () {
+      var vm = this
       var scaleValue = this.retrieveScale($('.cd-modal-bg'))
       $('.cd-modal-bg').addClass('is-visible').one('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function () {
         vm.animateLayer($('.cd-modal-bg'), scaleValue, true)
+      })
+    },
+    // querySceneInfo
+    // 从报警跳转
+    showWarnPanorama: function (target) {
+      var vm = this
+      // 根据devCode 请求场景数据
+      this.$http.get(vm.sceneInfoService, {params: {baojingID: target}}).then(function (res) {
+        if (res.data.result === '0') {
+          var result = res.data.resultMess
+          var PanoramaParams = {
+            'Name': result.name,
+            'sence_id': result.sence_id,
+            'senceitems_id': result.senceitems_id,
+            'group_id': result.group_id
+          }
+          vm.setframeParam(PanoramaParams)
+          var params = $.extend({}, vm.postParams)
+          params.dwbjb = result.xyz
+          params.devCode = target
+          // 打开全景
+          IFramePost.doPost({
+            Url: vm.framePostUrl,
+            Target: vm.$refs.rightFrame,
+            PostParams: params
+          })
+          vm.openPanorama()
+        } else {
+          vm.$Message.error(res.data.resultMess)
+          console.error(res.data.resultMess)
+        }
       })
     },
     // 动画缩放效果

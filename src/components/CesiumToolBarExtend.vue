@@ -18,7 +18,7 @@
           <tr v-for="(item, index) in warnings" :key="index">
             <td>{{item.devCode}}</td>
             <td>
-              <a href="#" v-on:click="updateu(item.devCode)">查看</a>
+              <a  @click="showWarnPanorama(item.devCode)">查看</a>
             </td>
           </tr>
         </table>
@@ -79,6 +79,10 @@ export default {
           console.info(layero)
         }
       })
+    },
+    // 打开报警全景
+    showWarnPanorama: function (target) {
+      this.$root.eventBus.$emit('showWarnPanorama', target)
     },
     // 请求用户信息
     requestUesrInfo: function (target) {

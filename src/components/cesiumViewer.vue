@@ -3,7 +3,7 @@
       <tool-bar></tool-bar>
       <panorama-view></panorama-view>
       <CesiumToolBarExtend/>
-      <!--<LocationBox  :location-info="location"></LocationBox>-->
+      <LocationBox  :location-info="location"></LocationBox>
     </div>
 
 </template>
@@ -14,10 +14,9 @@ import CesiumToolBarExtend from './CesiumToolBarExtend'
 import Cesium from 'cesium/Cesium'
 import 'cesium/Widgets/widgets.css'
 import FileSaver from 'file-saver'
-import api from '../../static/js/api'
 import LocationBox from './LocationBox'
 import io from 'socket.io-client'
-// import LocalGeocoder from '../utils/LocalGeocoder'
+import LocalGeocoder from '../utils/LocalGeocoder'
 // import '../../static/js/viewerCesiumNavigationMixin'
 /* eslint-disable no-unused-vars */
 export default {
@@ -30,7 +29,7 @@ export default {
   data () {
     return {
       config: {
-        geocoder: false,
+        geocoder: new LocalGeocoder(),
         timeline: false,
         navigationHelpButton: false,
         animation: false,
@@ -45,18 +44,20 @@ export default {
     }
   },
   created () {
-    console.info('panorama created')
-    console.info(api)
     // 初始化api配置
     this.$store.commit('updateApi', api)
     // console.info(this.$store.getters.state.api)
     // 监听showPanorama 方法 此方法由 ToolBar.vue 中的按钮触发,此事件在热部署中会多次执行，解决方案往下看
     // https://www.cnblogs.com/xiaochongchong/p/8127148.html
     this.$root.eventBus.$on('getHeight', this.getheight)
+    this.$root.eventBus.$on('adddTest', this.addtest)
+    this.$root.eventBus.$on('removeTest', this.removetest)
   },
   beforeDestroy () {
     // 防止多次触发
     this.$root.eventBus.$off('getHeight', this.getheight)
+    this.$root.eventBus.$off('adddTest', this.addtest)
+    this.$root.eventBus.$off('removeTest', this.removetest)
   },
   mounted () {
     // 使相机默认朝向中国
@@ -65,13 +66,25 @@ export default {
     // Cesium.BingMapsApi.defaultKey = ''
     this.viewer = new Cesium.Viewer('cesiumContainer', this.config)
     // Cesium.viewerCesiumNavigationMixin(this.viewer, {})
-    this.viewer.scene.debugShowFramesPerSecond = true
+    // this.viewer.scene.debugShowFramesPerSecond = true
     this.removeDefaultEvent()
     this.load3dTiles()
     this.loadGeojson()
     this.showHight()
     this.entityPick()
     this.getWarningAddress()
+    Cesium.when(document.createElement('canvas')).then(function (res) {
+      console.info(res)
+    })
+    // var tetenttiy = this.viewer.entities.add({
+    //   name: 'test',
+    //   position: Cesium.Cartesian3.fromDegrees(118.83670333, 38.14355, 4.0),
+    //   billboard: {
+    //     image: 'static/webcam.png',
+    //     disableDepthTestDistance: Number.POSITIVE_INFINITY
+    //   }
+    // })
+    // this.getHistoryWarning()
     // this.warningMonitoring()
   },
   computed: {
@@ -84,12 +97,21 @@ export default {
     localtionReportService () {
       return this.$store.getters.getlocaltionReportUrl
     },
+    sceneInfoService () {
+      return this.$store.getters.getSceneInfoUrl
+    },
     warningQueryService () {
       return this.$store.getters.getWarningQueryUrl
+    },
+    historyWarningQueryService () {
+      return this.$store.getters.gethistoryWarningsUrl
     },
     // 获得的用户信息
     userinfo () {
       return this.$store.getters.getUser
+    },
+    warnings () {
+      return this.$store.getters.getWarnings
     }
   },
   methods: {
@@ -103,13 +125,15 @@ export default {
         vm.viewer.dataSources.add(datasource)
         vm.viewer.zoomTo(datasource)
         vm.entities = datasource.entities.values
-        // vm.config.geocoder.updateArr(vm)
+        vm.config.geocoder.updateArr(vm)
         for (var i = 0; i < vm.entities.length; i++) {
           var entity = vm.entities[i]
+          var color = entity.properties.color.getValue(vm.viewer.clock.currentTime)
           entity.billboard = {
-            image: '../../static/webcam.png', // default: undefined
+            image: 'static/webcam.png', // default: undefined
             show: true,
-            color: Cesium.Color.LIME,
+            color: Cesium.Color.fromCssColorString(color),
+            scale: 1.0,
             disableDepthTestDistance: Number.POSITIVE_INFINITY
           }
           // entity.point = new Cesium.PointGraphics({
@@ -141,6 +165,7 @@ export default {
             }
           }
         })
+        vm.getHistoryWarning()
       }).otherwise(function (err) {
         vm.$Message.error(`请求 GeoJson服务失败: ${err}`)
         console.error(`请求 GeoJson服务失败: ${err}`)
@@ -241,8 +266,8 @@ export default {
             var cartesian = vm.viewer.scene.pickPosition(movement.endPosition)
             if (Cesium.defined(cartesian)) {
               var cartographic = Cesium.Cartographic.fromCartesian(cartesian)
-              var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(5)
-              var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(5)
+              var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(8)
+              var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(8)
               var heightString = cartographic.height.toFixed(2)
               vm.location = `经度：${longitudeString} 纬度：${latitudeString} 高度：${heightString}m`
             }
@@ -268,12 +293,63 @@ export default {
         }
       }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
     },
+    // 页面初始化 获取历史报警信息
+    getHistoryWarning: function () {
+      var vm = this
+      vm.$http.get(vm.historyWarningQueryService).then(function (res) {
+        if (res.data.result === '0') {
+          var historyWarnings = res.data.resultMess
+          for (var i = 0; i < historyWarnings.length; i++) {
+            var hiswarn = historyWarnings[i]
+            if (!vm.checkDup(hiswarn)) {
+              vm.$store.commit('addWarning', hiswarn)
+              vm.entityColorChange(hiswarn, true)
+            }
+          }
+        }
+      })
+    },
+    // warning 变色
+    entityColorChange: function (warning, isWarning) {
+      var vm = this
+      vm.$http.get(vm.sceneInfoService, {params: {baojingID: warning.devCode}}).then(function (res) {
+        if (res.data.result === '0') {
+          var name = res.data.resultMess.name
+          for (var i = 0; i < vm.entities.length; i++) {
+            var entity = vm.entities[i]
+            if (entity.name === name) {
+              entity.billboard.color.setValue(isWarning ? Cesium.Color.RED : Cesium.Color.LIME)
+              entity.billboard.scale.setValue(isWarning ? 1.5 : 1.0)
+              break
+            }
+          }
+        }
+      })
+    },
+    // 报警重复检测
+    checkDup: function (obj) {
+      var vm = this
+      var array = vm.warnings
+      var value = obj.devCode
+      for (var i = 0; i < array.length; i++) {
+        if (obj) {
+          if (array[i]) {
+            var value1 = array[i].devCode
+            if (value === value1) {
+              return true
+            }
+          }
+        }
+      }
+      return false
+    },
+    // 获取报警地址
     getWarningAddress: function () {
       var vm = this
       vm.$http.get(vm.warningQueryService).then(function (res) {
         if (res.data.result === '0') {
           vm.$store.commit('updateWarningServer', res.data.resultMess)
-          // vm.warningMonitoring()
+          vm.warningMonitoring()
         }
       })
     },
@@ -283,18 +359,37 @@ export default {
       var socket = io.connect(vm.$store.getters.getWarningUrl)
       socket.on('connect', function () {
         console.info(socket.id)
-        socket.emit('sendMessage', 'helloworld')
+        // socket.emit('sendMessage', 'helloworld')
       })
       // 报警
       socket.on('warn', function (data) {
-        console.info(data)
+        if (!vm.checkDup(data)) {
+          vm.$store.commit('addWarning', data)
+          vm.entityColorChange(data, true)
+          this.$root.eventBus.$emit('message', {action: 'addWarning', target: data})
+        }
       })
       // 消除报警
       socket.on('rmWarn', function (data) {
-
+        vm.$store.commit('removeWarning', data)
+        vm.entityColorChange(data, false)
+        this.$root.eventBus.$emit('message', {action: 'rmWarning', target: data})
       })
+    },
+    addtest: function (data) {
+      var vm = this
+      if (!vm.checkDup(data)) {
+        vm.$store.commit('addWarning', data)
+        vm.entityColorChange(data, true)
+        this.$root.eventBus.$emit('message', {action: 'addWarning', target: data})
+      }
+    },
+    removetest: function (data) {
+      var vm = this
+      vm.$store.commit('removeWarning', data)
+      vm.entityColorChange(data, false)
+      this.$root.eventBus.$emit('message', {action: 'rmWarning', target: data})
     }
-
   }
 }
 </script>
