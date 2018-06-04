@@ -14,6 +14,7 @@ const store = new Vuex.Store({
       senceitems_id: '',
       group_id: ''
     },
+    musicSrc: 'static/warn.mp3',
     // 用户信息缓存
     user: {
       userCode: 'default',
@@ -157,6 +158,9 @@ const store = new Vuex.Store({
     // 报警信息
     getWarnings: (state) => {
       return state.warning
+    },
+    getMusicSrc: (state) => {
+      return state.musicSrc
     }
 
   }

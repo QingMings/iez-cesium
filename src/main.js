@@ -74,7 +74,7 @@ var vm = new Vue({
     //   fill: Cesium.Color.RED,
     //   strokeWidth: 3,
     //   markerSymbol: '?'
-    // }))
+    // }))`
     // viewer.flyTo(datasource)
     // 使球自转
     // var lastNow = Date.now()

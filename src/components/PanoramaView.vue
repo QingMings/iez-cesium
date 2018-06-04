@@ -69,7 +69,7 @@ export default {
     getMeterViewService () {
       return this.$store.getters.getMeterViewUrl
     },
-    getlocationsService() {
+    getlocationsService () {
       return this.$store.getters.getLocationsUrl
     }
   },
@@ -92,11 +92,17 @@ export default {
       if (messageEvent.data['action'] === 'getlocationsUrl') {
         vm.message({action: 'locations', target: vm.getlocationsService})
       }
+      if (messageEvent.data['action'] === 'stopSoundWarning') {
+        vm.stopSoundWarning()
+      }
     },
     //   send info to iframe page
     message: function (params) {
       // this.$Message.info('message 调用')
       this.windowProxy.post({'action': params.action, 'data': params.target})
+    },
+    stopSoundWarning: function () {
+      this.$root.eventBus.$emit('pause')
     },
     // 加载frame
     loadIframe: function () {
@@ -129,8 +135,9 @@ export default {
     showPanorama: function (target) {
       var vm = this
       this.setframeParam(target)
-      this.loadIframe()
       this.openPanorama()
+      this.loadIframe()
+
     },
     // 显示全景遮罩
     openPanorama: function () {
@@ -164,6 +171,7 @@ export default {
             Target: vm.$refs.rightFrame,
             PostParams: params
           })
+          vm.stopSoundWarning()
           vm.openPanorama()
         } else {
           vm.$Message.error(res.data.resultMess)
@@ -223,6 +231,7 @@ export default {
       })
       // if browser doesn't support transitions...
       if (section.parents('.no-csstransitions').length > 0) this.animateLayer(section.find('.cd-modal-bg'), 1, false)
+      this.$root.eventBus.$emit('message', {action: 'stopMusic', target: {}})
     }
   }
 }

@@ -94,7 +94,7 @@ export default {
             if (res.data.result === '0') {
               vm.$store.commit('updateUser', res.data.resultMess)
             } else {
-              vm.$Message.warn(res.data.resultMess)
+              // vm.$Message.warn(res.data.resultMess)
               console.warn(res.data.resultMess)
             }
           }).catch(function (err) {

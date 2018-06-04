@@ -1,9 +1,10 @@
 <template>
     <div id="cesiumContainer">
-      <tool-bar></tool-bar>
+      <!--<tool-bar></tool-bar>-->
       <panorama-view></panorama-view>
       <CesiumToolBarExtend/>
-      <LocationBox  :location-info="location"></LocationBox>
+      <!--<LocationBox  :location-info="location"></LocationBox>-->
+      <SoundWarning></SoundWarning>
     </div>
 
 </template>
@@ -17,10 +18,12 @@ import FileSaver from 'file-saver'
 import LocationBox from './LocationBox'
 import io from 'socket.io-client'
 import LocalGeocoder from '../utils/LocalGeocoder'
+import SoundWarning from './SoundWarning'
 // import '../../static/js/viewerCesiumNavigationMixin'
 /* eslint-disable no-unused-vars */
 export default {
   components: {
+    SoundWarning,
     LocationBox,
     CesiumToolBarExtend,
     PanoramaView,
@@ -29,7 +32,7 @@ export default {
   data () {
     return {
       config: {
-        geocoder: new LocalGeocoder(),
+        geocoder: false,
         timeline: false,
         navigationHelpButton: false,
         animation: false,
@@ -61,21 +64,29 @@ export default {
   },
   mounted () {
     // 使相机默认朝向中国
-
+    var vm = this
     Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(73, 4, 135, 53)
-    // Cesium.BingMapsApi.defaultKey = ''
+    Cesium.BingMapsApi.defaultKey = ''
     this.viewer = new Cesium.Viewer('cesiumContainer', this.config)
     // Cesium.viewerCesiumNavigationMixin(this.viewer, {})
-    // this.viewer.scene.debugShowFramesPerSecond = true
+    this.viewer.scene.debugShowFramesPerSecond = true
     this.removeDefaultEvent()
     this.load3dTiles()
     this.loadGeojson()
     this.showHight()
     this.entityPick()
     this.getWarningAddress()
-    Cesium.when(document.createElement('canvas')).then(function (res) {
-      console.info(res)
-    })
+    // Cesium.when(document.createElement('canvas')).then(function (res) {
+    //   console.info(res)
+    // })
+
+    // vm.viewer.dataSources.add(Cesium.KmlDataSource.load('static/cjdgl.kmz',
+    //   {
+    //     camera: vm.viewer.scene.camera,
+    //     canvas: vm.viewer.scene.canvas
+    //   })
+    // )
+    // this.viewer.zoomTo(dataSource1)
     // var tetenttiy = this.viewer.entities.add({
     //   name: 'test',
     //   position: Cesium.Cartesian3.fromDegrees(118.83670333, 38.14355, 4.0),
@@ -123,9 +134,9 @@ export default {
       var features = datasource1.load(serviceUrl)
       features.then(function (datasource) {
         vm.viewer.dataSources.add(datasource)
-        vm.viewer.zoomTo(datasource)
+        // vm.viewer.zoomTo(datasource)
         vm.entities = datasource.entities.values
-        vm.config.geocoder.updateArr(vm)
+        // vm.config.geocoder.updateArr(vm)
         for (var i = 0; i < vm.entities.length; i++) {
           var entity = vm.entities[i]
           var color = entity.properties.color.getValue(vm.viewer.clock.currentTime)
@@ -299,6 +310,9 @@ export default {
       vm.$http.get(vm.historyWarningQueryService).then(function (res) {
         if (res.data.result === '0') {
           var historyWarnings = res.data.resultMess
+          if (historyWarnings.length > 0) {
+            vm.$root.eventBus.$emit('play')
+          }
           for (var i = 0; i < historyWarnings.length; i++) {
             var hiswarn = historyWarnings[i]
             if (!vm.checkDup(hiswarn)) {
@@ -367,6 +381,7 @@ export default {
           vm.$store.commit('addWarning', data)
           vm.entityColorChange(data, true)
           this.$root.eventBus.$emit('message', {action: 'addWarning', target: data})
+          this.$root.eventBus.$emit('play')
         }
       })
       // 消除报警
