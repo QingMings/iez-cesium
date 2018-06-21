@@ -55,13 +55,13 @@ export default {
     }
   },
   created () {
-    console.info('created')
+    // console.info('created')
   },
   mounted () {
     // if ($('.cesium-viewer-toolbar').length > 0) {
     //   console.info('已经渲染完毕')
     // }
-    console.info('mounted about')
+    // console.info('mounted about')
   },
   methods: {
     layerManagerTrigger: function () {

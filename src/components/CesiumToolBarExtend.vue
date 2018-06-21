@@ -13,10 +13,14 @@
 
           <tr class="header">
             <td>仪表号</td>
+            <td>报警内容</td>
+            <td>报警时间</td>
             <td>操作</td>
           </tr>
           <tr v-for="(item, index) in warnings" :key="index">
             <td>{{item.devCode}}</td>
+            <td>{{item.warnContent}}</td>
+            <td>{{item.warnTime}}</td>
             <td>
               <a  @click="showWarnPanorama(item.devCode)">查看</a>
             </td>
@@ -69,8 +73,9 @@ export default {
         type: 1,
         title: '仪表报警信息',
         shadeClose: false,
-        resize: false,
+        // resize: false,
         offset: 'custom',
+        area: ['auto', 'auto'],
         shade: 0, // 关闭遮罩
         btn: [], // 不显示按钮
         content: $('#warnContent'),
@@ -91,7 +96,7 @@ export default {
       if (Cesium.defined(identity)) {
         this.$http.get(this.userApi, {params: { uid: identity }})
           .then(function (res) {
-            if (res.data.result === '0') {
+            if (res.data.result === 0) {
               vm.$store.commit('updateUser', res.data.resultMess)
             } else {
               // vm.$Message.warn(res.data.resultMess)

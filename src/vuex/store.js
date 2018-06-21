@@ -38,13 +38,14 @@ const store = new Vuex.Store({
       warningIpQueryUrl: ``,
       // 报警IP 端口
       warningServer: {
-        ip: '',
-        port: ''
+        warning: '',
+        cancelWarning: ''
       },
       //  报警 websocket 地址
       warningUrl: ``,
       historyWarningsUrl: '',
       meterViewUrl: '',
+      videoViewUrl: '',
       locationsUrl: ''
     },
     warning: []
@@ -73,12 +74,13 @@ const store = new Vuex.Store({
       state.api.geojsonServiceUrl = config.geojsonServiceUrl
       state.api.historyWarningsUrl = config.historyWarningsUrl
       state.api.meterViewUrl = config.meterViewUrl
+      state.api.videoViewUrl = config.videoViewUrl
       state.api.locationsUrl = config.locationsUrl
     },
     // 更新 warning Server 地址
     updateWarningServer (state, serverConfig) {
-      state.api.warningServer.ip = serverConfig.IP
-      state.api.warningServer.port = serverConfig.PORT
+      state.api.warningServer.warning = serverConfig.warning
+      state.api.warningServer.cancelWarning = serverConfig.cancelWarning
     },
     // 添加报警
     addWarning (state, warning) {
@@ -134,7 +136,10 @@ const store = new Vuex.Store({
     },
     // 获取报警 websocket地址
     getWarningUrl: (state) => {
-      return `ws://${state.api.warningServer.ip}:${state.api.warningServer.port}`
+      return `ws://${state.api.warningServer.warning}`
+    },
+    getCancelWarning: (state) => {
+      return `ws://${state.api.warningServer.cancelWarning}`
     },
     // 获取历史报警信息地址
     gethistoryWarningsUrl: (state) => {
@@ -143,6 +148,9 @@ const store = new Vuex.Store({
     // 获取动态页面进行展示
     getMeterViewUrl: (state) => {
       return state.api.meterViewUrl
+    },
+    getVideoViewUrl: (state) => {
+      return state.api.videoViewUrl
     },
     getLocationsUrl: (state) => {
       return state.api.locationsUrl

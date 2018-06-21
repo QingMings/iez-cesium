@@ -4,7 +4,7 @@
       <span class="cd-modal-center"></span>
       <a  @click="closeModel"  @keyup.13="closeModel" class="cd-modal-close"></a>
       <div class="cd-modal">
-        <iframe :id="frame" name="rightFrame" ref="rightFrame" style="width:100%;height:100%;overflow:hidden;margin:0" scrolling="no" frameborder="0" ></iframe>
+        <iframe :id="frame" allowfullscreen name="rightFrame" ref="rightFrame" style="width:100%;height:100%;overflow:hidden;margin:0" scrolling="no" frameborder="0" ></iframe>
       </div>
     </div>
 </template>
@@ -69,8 +69,14 @@ export default {
     getMeterViewService () {
       return this.$store.getters.getMeterViewUrl
     },
+    getVideoViewService () {
+      return this.$store.getters.getVideoViewUrl
+    },
     getlocationsService () {
       return this.$store.getters.getLocationsUrl
+    },
+    getUserId () {
+      return this.$store.getters.getUser.userCode
     }
   },
   methods: {
@@ -89,8 +95,14 @@ export default {
       if (messageEvent.data['action'] === 'getMeterView') {
         vm.message({action: 'meterView', target: vm.getMeterViewService})
       }
+      if (messageEvent.data['action'] === 'getVideoView') {
+        vm.message({action: 'videoView', target: vm.getVideoViewService})
+      }
       if (messageEvent.data['action'] === 'getlocationsUrl') {
         vm.message({action: 'locations', target: vm.getlocationsService})
+      }
+      if (messageEvent.data['action'] === 'getUserId') {
+        vm.message({action: 'uid', target: vm.getUserId})
       }
       if (messageEvent.data['action'] === 'stopSoundWarning') {
         vm.stopSoundWarning()

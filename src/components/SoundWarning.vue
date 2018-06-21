@@ -1,6 +1,9 @@
 <template>
   <div id="SoundWarning">
-    <audio id="#audio" :src="musicSrc" autoplay loop></audio>
+    <audio id="#audio"  muted  autoplay loop>
+      <source :src="musicSrc" type="audio/mpeg">
+      Your browser does not support the audio tag.
+    </audio>
   </div>
 </template>
 

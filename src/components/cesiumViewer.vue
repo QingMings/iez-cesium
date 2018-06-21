@@ -19,7 +19,7 @@ import LocationBox from './LocationBox'
 import io from 'socket.io-client'
 import LocalGeocoder from '../utils/LocalGeocoder'
 import SoundWarning from './SoundWarning'
-// import '../../static/js/viewerCesiumNavigationMixin'
+import viewerCesiumNavigationMixin from '../widget/navi/viewerCesiumNavigationMixin'
 /* eslint-disable no-unused-vars */
 export default {
   components: {
@@ -43,7 +43,8 @@ export default {
       },
       viewer: undefined,
       entities: undefined,
-      location: undefined
+      location: undefined,
+      tileset: undefined
     }
   },
   created () {
@@ -68,35 +69,43 @@ export default {
     Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(73, 4, 135, 53)
     Cesium.BingMapsApi.defaultKey = ''
     this.viewer = new Cesium.Viewer('cesiumContainer', this.config)
-    // Cesium.viewerCesiumNavigationMixin(this.viewer, {})
-    this.viewer.scene.debugShowFramesPerSecond = true
+    // viewerCesiumNavigationMixin(this.viewer, {
+    //   defaultResetView: Cesium.Rectangle.fromDegrees(118.8345, 38.143973, 118.83815627, 38.14106426)
+    // })
+    // this.viewer.scene.debugShowFramesPerSecond = true
+    // this.viewer.scene.debugShowContentBoundingVolume = true
     this.removeDefaultEvent()
     this.load3dTiles()
     this.loadGeojson()
     this.showHight()
     this.entityPick()
     this.getWarningAddress()
+    // var camera = vm.viewer.scene.camera
+    // setTimeout(function () {
+    //   camera.flyTo({
+    //     destination: Cesium.Cartesian3.fromDegrees(118.83646524, 38.14250495, 463.34038727246224),
+    //     duration: 10,
+    //     pitch: Cesium.Math.toRadians(-50.0),
+    //     complete: function () {
+    //       setTimeout(function () {
+    //         camera.flyTo({
+    //           destination: Cesium.Cartesian3.fromDegrees(118.83891297, 38.14412996, 186.50838555841779),
+    //           duration: 2,
+    //           orientation: {
+    //             heading: Cesium.Math.toRadians(230.0),
+    //             pitch: Cesium.Math.toRadians(-35.0),
+    //             roll: 0.0
+    //           },
+    //
+    //           easingFunction: Cesium.EasingFunction.LINEAR_NONE
+    //         })
+    //       }, 1000)
+    //     }
+    //   })
+    // }, 5000)
     // Cesium.when(document.createElement('canvas')).then(function (res) {
     //   console.info(res)
     // })
-
-    // vm.viewer.dataSources.add(Cesium.KmlDataSource.load('static/cjdgl.kmz',
-    //   {
-    //     camera: vm.viewer.scene.camera,
-    //     canvas: vm.viewer.scene.canvas
-    //   })
-    // )
-    // this.viewer.zoomTo(dataSource1)
-    // var tetenttiy = this.viewer.entities.add({
-    //   name: 'test',
-    //   position: Cesium.Cartesian3.fromDegrees(118.83670333, 38.14355, 4.0),
-    //   billboard: {
-    //     image: 'static/webcam.png',
-    //     disableDepthTestDistance: Number.POSITIVE_INFINITY
-    //   }
-    // })
-    // this.getHistoryWarning()
-    // this.warningMonitoring()
   },
   computed: {
     geojsonService () {
@@ -205,18 +214,48 @@ export default {
           return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows())
         }
       }
-      var tileset = new Cesium.Cesium3DTileset({
+      vm.tileset = new Cesium.Cesium3DTileset({
         url: vm.modelTileService,
         maximumScreenSpaceError: isMobile.any() ? 8 : 1,
-        maximumNumberOfLoadedTiles: isMobile.any() ? 10 : 1000
+        maximumNumberOfLoadedTiles: isMobile.any() ? 10 : 500
       })
-      tileset.readyPromise.then(function (tileset) {
+      // tileset.debugShowContentBoundingVolume=true
+      vm.tileset.readyPromise.then(function (tileset) {
         vm.viewer.scene.primitives.add(tileset)
         vm.viewer.zoomTo(tileset)
       }).otherwise(function (err) {
         vm.$Message.error(`请求 模型服务失败: ${err}`)
         console.error(`请求 模型服务失败: ${err}`)
       })
+      // // A b3dm tileset used to classify the photogrammetry tileset
+      // var classificationTileset = new Cesium.Cesium3DTileset({
+      //   url: 'static/tileset.json'
+      //   ,
+      //   classificationType: Cesium.ClassificationType.CESIUM_3D_TILE
+      // })
+      // classificationTileset.style = new Cesium.Cesium3DTileStyle({
+      //   color: 'rgba(255, 0, 0, 0.5)'
+      // })
+      // classificationTileset.readyPromise.then(function (tileset) {
+      //   // tileset.show=true
+      //   vm.viewer.scene.primitives.add(tileset)
+      //   vm.viewer.zoomTo(tileset)
+      // }).otherwise(function (err) {
+      //   vm.$Message.error(`请求 模型服务失败: ${err}`)
+      //   console.error(`请求 模型服务失败: ${err}`)
+      // })
+      // The same b3dm tileset used for classification, but rendered normally for comparison.
+      // var nonClassificationTileset = new Cesium.Cesium3DTileset({
+      //   url: 'static/tileset.json',
+      //   show: true
+      //   // ,
+      //   //    classificationType: Cesium.ClassificationType.CESIUM_3D_TILE
+      // })
+      // nonClassificationTileset.style = new Cesium.Cesium3DTileStyle({
+      //   color: 'rgba(255, 0, 0, 0.5)'
+      // })
+      // vm.viewer.scene.primitives.add(nonClassificationTileset)
+      // vm.viewer.zoomTo(nonClassificationTileset)
     },
     // 实体点击事件 打开全景
     entityPick: function (target) {
@@ -308,14 +347,14 @@ export default {
     getHistoryWarning: function () {
       var vm = this
       vm.$http.get(vm.historyWarningQueryService).then(function (res) {
-        if (res.data.result === '0') {
+        if (res.data.result === 0) {
           var historyWarnings = res.data.resultMess
           if (historyWarnings.length > 0) {
             vm.$root.eventBus.$emit('play')
           }
           for (var i = 0; i < historyWarnings.length; i++) {
             var hiswarn = historyWarnings[i]
-            if (!vm.checkDup(hiswarn)) {
+            if (!vm.checkDup(hiswarn)) { // 根据devCode 去重
               vm.$store.commit('addWarning', hiswarn)
               vm.entityColorChange(hiswarn, true)
             }
@@ -361,7 +400,7 @@ export default {
     getWarningAddress: function () {
       var vm = this
       vm.$http.get(vm.warningQueryService).then(function (res) {
-        if (res.data.result === '0') {
+        if (res.data.result === 0) {
           vm.$store.commit('updateWarningServer', res.data.resultMess)
           vm.warningMonitoring()
         }
@@ -370,13 +409,13 @@ export default {
     // 报警监控
     warningMonitoring: function () {
       var vm = this
-      var socket = io.connect(vm.$store.getters.getWarningUrl)
-      socket.on('connect', function () {
-        console.info(socket.id)
+      var warning = io.connect(vm.$store.getters.getWarningUrl)
+      warning.on('connect', function () {
+        console.info(warning.id)
         // socket.emit('sendMessage', 'helloworld')
       })
       // 报警
-      socket.on('warn', function (data) {
+      warning.on('date', function (data) {
         if (!vm.checkDup(data)) {
           vm.$store.commit('addWarning', data)
           vm.entityColorChange(data, true)
@@ -384,8 +423,13 @@ export default {
           this.$root.eventBus.$emit('play')
         }
       })
+      var cancelWarning = io.connect(vm.$store.getters.getCancelWarning)
+      warning.on('connect', function () {
+        console.info(warning.id)
+        // socket.emit('sendMessage', 'helloworld')
+      })
       // 消除报警
-      socket.on('rmWarn', function (data) {
+      cancelWarning.on('date', function (data) {
         vm.$store.commit('removeWarning', data)
         vm.entityColorChange(data, false)
         this.$root.eventBus.$emit('message', {action: 'rmWarning', target: data})
@@ -408,8 +452,11 @@ export default {
   }
 }
 </script>
+<style lang="less">
+  @import '../widget/navi/styles/cesium-navigation';
+</style>
 <style>
-.iez-point{
+  .iez-point{
   border-radius: 3px;
   position: absolute;
   font-size: 13px;
@@ -420,5 +467,5 @@ export default {
   outline: 3px #b6c0c3 solid;
   color: white;
   z-index: 99;
-}
+  }
 </style>
