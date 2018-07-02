@@ -90,7 +90,10 @@ ResetViewNavigationControl.prototype.resetView = function () {
         try {
           Rectangle.validate(this.terria.options.defaultResetView)
           camera.flyTo({
-            destination: this.terria.options.defaultResetView
+            destination: this.terria.options.defaultResetView,
+            orientation: {
+              heading: Cesium.Math.toRadians(5.729578)
+            }
           })
         } catch (e) {
           console.log('Cesium-navigation/ResetViewNavigationControl:   options.defaultResetView Cesium rectangle is  invalid!')

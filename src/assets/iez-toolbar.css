@@ -52,7 +52,7 @@
 }
  .iez-dropmenu:hover{
   background: rgba(0, 0, 0, 0.4);
-  font-weight:bold;
+  /*font-weight:bold;*/
 }
 .iez-toolbar .iez-buttons .ivu-select-dropdown{
   background: rgba(23, 20, 20, 0.5);

@@ -31,5 +31,8 @@ export default {
   color: #2c3e50;
   /*margin-top: 60px;*/
 }
+body .ivu-spin-fix {
+  background-color: rgba(12, 10, 10, 0.94);
+}
 
 </style>

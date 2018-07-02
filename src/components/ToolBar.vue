@@ -5,7 +5,8 @@
        <Icon type="ios-settings-strong"></Icon>
      </Button>
      <Button shape="circle" title="工具" @click="toolsTrigger1" class="ivu-btn-circle ivu-btn-icon-only ">
-       <Icon type="android-menu"></Icon>
+       <Icon type="android-menu" sr></Icon>
+       <image href="http://192.168.2.114:8084/360hot/img/jingbao.gif"></image>
      </Button>
     <Button shape="circle" title="工具" @click="toolsTrigger" class="ivu-btn-circle ivu-btn-icon-only ">
       <Icon type="android-menu"></Icon>
@@ -18,7 +19,9 @@
          <Icon type="android-menu"></Icon>
        </Button>
        <DropdownMenu slot="list" class="iez-dropmenu" v-for="data in test" v-bind:key="data">
-         <DropdownItem>{{data}}</DropdownItem>
+         <DropdownItem>
+           <span>{{data}}</span>  <ISwitch size="small" :name="data" ></ISwitch>
+         </DropdownItem>
          <!--<DropdownItem>炸酱面</DropdownItem>-->
          <!--<DropdownItem>豆汁儿</DropdownItem>-->
          <!--<DropdownItem>冰糖葫芦</DropdownItem>-->
@@ -37,6 +40,7 @@ import Icon from '../../node_modules/iview/src/components/icon/icon.vue'
 import Dropdown from '../../node_modules/iview/src/components/dropdown/dropdown.vue'
 import DropdownMenu from '../../node_modules/iview/src/components/dropdown/dropdown-menu.vue'
 import DropdownItem from '../../node_modules/iview/src/components/dropdown/dropdown-item.vue'
+import ISwitch from '../../node_modules/iview/src/components/switch/switch.vue'
 import $ from '../../static/js/jquery-vendor'
 
 export default {
@@ -44,6 +48,7 @@ export default {
     DropdownItem,
     DropdownMenu,
     Dropdown,
+    ISwitch,
     Icon,
     Button
   },

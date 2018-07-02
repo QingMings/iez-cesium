@@ -12,6 +12,7 @@
 import $ from '../../static/js/jquery-vendor'
 import IFramePost from '../utils/IframePost'
 import Porthole from 'porthole-proxy/lib/porthole.min'
+import iutil from '../utils/iviewUtils'
 
 export default {
   name: 'PanoramaView',
@@ -186,7 +187,7 @@ export default {
           vm.stopSoundWarning()
           vm.openPanorama()
         } else {
-          vm.$Message.error(res.data.resultMess)
+          vm.$Message.error(iutil.err(res.data.resultMess))
           console.error(res.data.resultMess)
         }
       })

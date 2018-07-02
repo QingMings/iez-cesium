@@ -8,7 +8,8 @@ import Cesium from 'cesium/Cesium'
 import 'cesium/Widgets/widgets.css'
 import 'iview/dist/styles/iview.css'
 import '../static/js/layer/theme/default/layer.css'
-import {Message} from 'iview'
+import { Message, Spin, Icon } from 'iview'
+
 import $ from '../static/js/jquery-vendor'
 import Layer from '../static/js/layer/layer'
 import './assets/iez-layer.css'
@@ -18,12 +19,13 @@ import Vuex from 'vuex'
 import store from './vuex/store'
 
 Vue.use(Vuex)
-
-
+Vue.component('Icon', Icon)
 Vue.config.productionTip = false
 Vue.prototype.$Message = Message
+Vue.prototype.$Spin = Spin
 Vue.prototype.$layer = Layer
 Vue.prototype.$http = axios
+
 /* eslint-disable no-new */
 var vm = new Vue({
   el: '#app',

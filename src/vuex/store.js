@@ -24,6 +24,8 @@ const store = new Vuex.Store({
     },
     api: {
       geojsonServiceUrl: '',
+      // build GeoJson
+      buildGeoJsonServiceUrl: '',
       //  全景服务地址
       panoramaUrl: '',
       // 3dTiles 服务地址
@@ -48,7 +50,27 @@ const store = new Vuex.Store({
       videoViewUrl: '',
       locationsUrl: ''
     },
-    warning: []
+    // 报警
+    warning: [],
+    // 设置
+    settings: {
+      showHotPoint: true,
+      showGroupMark: true,
+      showBuildMark: true,
+      autoInspection: true
+    },
+    // 定时器的管理
+    timeOut: {
+      // 登录列表定时刷新
+      loginListTimer: undefined,
+      autoInspectionTimer: undefined
+    },
+    complete: {
+      hotPointLoaded: false,
+      regionDataSourceLoaded: false,
+      buildingDataSourceLoaded: false
+    }
+
   },
   mutations: {
     //  post参数
@@ -72,10 +94,14 @@ const store = new Vuex.Store({
       state.api.modelTilesUrl = config.modelTilesUrl
       state.api.sceneInfoUrl = config.sceneInfoUrl
       state.api.geojsonServiceUrl = config.geojsonServiceUrl
+      state.api.buildGeoJsonServiceUrl = config.buildGeoJsonServiceUrl
       state.api.historyWarningsUrl = config.historyWarningsUrl
       state.api.meterViewUrl = config.meterViewUrl
       state.api.videoViewUrl = config.videoViewUrl
       state.api.locationsUrl = config.locationsUrl
+      if (config.settings) {
+        state.settings = config.settings
+      }
     },
     // 更新 warning Server 地址
     updateWarningServer (state, serverConfig) {
@@ -88,14 +114,49 @@ const store = new Vuex.Store({
     },
     // 移除报警
     removeWarning (state, warning) {
-      console.info(warning)
       state.warning.remove(warning)
+    },
+    // 通过配置文件更新Setting
+    updateSettings (state, mysettings) {
+      state.settings = mysettings
+    },
+    showHotPoint (state, status) {
+      state.settings.showHotPoint = status
+    },
+    showGroupMark (state, status) {
+      state.settings.showGroupMark = status
+    },
+    showBuildMark (state, status) {
+      state.settings.showBuildMark = status
+    },
+    // 自动巡检功能
+    autoInspection (state, status) {
+      state.settings.autoInspection = status
+    },
+    updateLoginListTimer (state, timer) {
+      state.timeOut.loginListTimer = timer
+    },
+    updateAutoInspectionTimer (state, timer) {
+      state.timeOut.autoInspectionTimer = timer
+    },
+    updateHotPointComplete (state, isLoaded) {
+      state.complete.hotPointLoaded = isLoaded
+    },
+    updateRegionDataComplete (state, isLoaded) {
+      state.complete.regionDataSourceLoaded = isLoaded
+    },
+    updateBuildingDataComplete (state, isLoaded) {
+      state.complete.buildingDataSourceLoaded = isLoaded
     }
   },
   getters: {
     // Geojson 服务地址
     getGeoJsonServiceUrl: (state) => {
       return state.api.geojsonServiceUrl
+    },
+    // build geoJson 服务地址
+    getBuildGeoJsonServiceUrl: (state) => {
+      return state.api.buildGeoJsonServiceUrl
     },
     // 获取服务地址
     getPanoramaPostUrl: (state) => {
@@ -169,8 +230,70 @@ const store = new Vuex.Store({
     },
     getMusicSrc: (state) => {
       return state.musicSrc
+    },
+    getHotPointStatus: (state) => {
+      return state.settings.showHotPoint
+    },
+    getGroupMarkStatus: (state) => {
+      return state.settings.showGroupMark
+    },
+    getBuildMarkStatus: (state) => {
+      return state.settings.showBuildMark
+    },
+    // 获取自动巡检 按钮状态
+    getAutoInspectionStatus: (state) => {
+      return state.settings.autoInspection
+    },
+    // 根据下标获得 setting
+    getSettingByIndex: (state) => (index) => {
+      if (index === 0) {
+        return state.settings.showHotPoint
+      } else if (index === 1) {
+        return state.settings.showGroupMark
+      } else if (index === 2) {
+        return state.settings.showBuildMark
+      } else if (index === 3) {
+        return state.settings.autoInspection
+      }
+    },
+    getLoginListTimer: (state) => {
+      return state.timeOut.loginListTimer
+    },
+    getAutoInspectionTimer: (state) => {
+      return state.timeOut.autoInspectionTimer
+    },
+    getHotPointLoadstatus: (state) => {
+      return state.complete.hotPointLoaded
+    },
+    getRegionLoadstatus: (state) => {
+      return state.complete.regionDataSourceLoaded
+    },
+    getBuildingLoadstatus: (state) => {
+      return state.complete.buildingDataSourceLoaded
+    },
+    // 在 建筑数据和区域数据加载正确完成够，自动巡检功能开启
+    getAutoInspectionLoadstatus: (state) => {
+      if (state.complete.buildingDataSourceLoaded === false && state.complete.regionDataSourceLoaded === false) {
+        return true
+      } else {
+        return state.complete.buildingDataSourceLoaded && state.complete.regionDataSourceLoaded
+      }
+    },
+    getSettingStatusByIndex: (state) => (index) => {
+      if (index === 0) {
+        return state.complete.hotPointLoaded
+      } else if (index === 1) {
+        return state.complete.regionDataSourceLoaded
+      } else if (index === 2) {
+        return state.complete.buildingDataSourceLoaded
+      } else if (index === 3) {
+        if (state.complete.buildingDataSourceLoaded === false && state.complete.regionDataSourceLoaded === false) {
+          return true
+        } else {
+          return state.complete.buildingDataSourceLoaded && state.complete.regionDataSourceLoaded
+        }
+      }
     }
-
   }
 })
 

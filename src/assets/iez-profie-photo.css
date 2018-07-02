@@ -11,9 +11,14 @@
   margin: 5px 8px 5px 8px;
   float: left;
 }
+.demo-avatar-badge {
+  float: left;
+  padding-left: 5px;
+}
 #cesiumContainer .cesium-viewer .cesium-viewer-toolbar{
   top: 10px;
-  right: 52px;
+  /*right: 52px;*/
+  right: 89px;
 }
 #cesiumContainer .cesium-viewer .cesium-viewer-toolbar .cesium-viewer-geocoderContainer{
   top:2px;
@@ -43,4 +48,103 @@
 .iez-profile-photo .demo-avatar-badge .ivu-avatar:focus {
   border-color: #ea4;
   outline: none;
+}
+
+
+.iez-dropmenu{
+  /*background: rgba(0, 0, 0, 0.4);*/
+  color: #fff;
+}
+.iez-dropmenu:hover{
+  background: rgba(0, 0, 0, 0.4);
+  /*font-weight:bold;*/
+}
+.iez-profile-photo .ivu-select-dropdown{
+  background: rgba(23, 20, 20, 0.5);
+  border-color: rgba(72, 69, 69, 0.4);
+  box-shadow: 0 1px 6px rgba(130, 122, 122, 0.62);
+}
+.iez-profile-photo .ivu-dropdown-item{
+  color: #ffffff;
+}
+.iez-profile-photo .ivu-dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+}
+.iez-profile-photo .ivu-dropdown-item .ivu-switch {
+
+  vertical-align: initial;
+}
+
+/* 登录人员头像列表*/
+
+#loginedContainer {
+
+
+}
+#loginedContainer .login-list {
+  height: 200px;
+  max-height: 200px;
+  margin-top: 10px;
+  overflow:auto;
+}
+#loginedContainer .login-list .login-name {
+  font-size: 16px;
+  color: white;
+  vertical-align: middle;
+  padding: 0px 6px;
+}
+#loginedContainer  .ivu-input-group-append {
+  padding: 4px ;
+  border-color: rgba(66, 199, 199, 0.63);
+  background-color: #928a8a3b
+}
+
+#loginedContainer .ivu-input:focus {
+  border-color: rgba(66, 199, 199, 0.63);
+}
+#loginedContainer .ivu-input:hover {
+  border-color: rgba(66, 199, 199, 0.63);
+}
+#loginedContainer  .ivu-input {
+  border-color: rgba(66, 199, 199, 0.63);
+  background-color: transparent;
+  color: white;
+}
+
+#loginedContainer  .ivu-input-group-append .ivu-btn {
+  background-color: #ca2e2e00
+}
+#loginedContainer  .ivu-input-group-append .ivu-btn .ivu-icon {
+  color: white;
+}
+
+#loginedContainer .login-item {
+  margin: 0;
+  line-height: normal;
+  padding: 7px 2px;
+  clear: both;
+  color: #495060;
+  font-size: 12px!important;
+  white-space: nowrap;
+  list-style: none;
+  cursor: pointer;
+  transition: background .2s ease-in-out;
+  text-align: left;
+}
+#loginedContainer .login-list::-webkit-scrollbar-track
+{
+  -webkit-box-shadow: inset 0 0 6px rgba(66, 199, 199, 0.63);
+  background-color: rgba(23, 20, 20, 0.5);
+}
+
+#loginedContainer .login-list::-webkit-scrollbar
+{
+  width: 6px;
+  background-color: rgba(23, 20, 20, 0.5);
+}
+
+#loginedContainer .login-list::-webkit-scrollbar-thumb
+{
+  background-color: rgba(66, 199, 199, 0.63);
 }
