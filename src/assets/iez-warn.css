@@ -1,0 +1,16 @@
+.iez-warn-left {
+  /*background-color:yellow;*/
+  position: absolute;
+  /*right: 5px;*/
+  top: 7px;
+  margin-right: 5px;
+  z-index: 99;
+}
+.iez-warn-photo {
+  margin: 5px 8px 5px 8px;
+  float: left;
+}
+.demo-avatar-badge {
+  float: left;
+  padding-left: 5px;
+}
