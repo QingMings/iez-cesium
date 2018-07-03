@@ -115,11 +115,8 @@ export default {
     loginListTimer () {
       return this.$store.getters.getLoginListTimer
     },
-    buildingLoaded () {
-      return this.$store.getters.getBuildingLoadstatus
-    },
-    regionLoaded () {
-      return this.$store.getters.getRegionLoadstatus
+    loginListInterval () {
+      return this.$store.getters.getLoginListInterval
     }
   },
   mounted () {
@@ -149,7 +146,9 @@ export default {
       return this.$store.getters.getSettingByIndex(index)
     },
     getSettingStatus: function (index) {
-      console.info(!this.$store.getters.getSettingStatusByIndex(index))
+      // if (index === 3) {
+      //   console.info(!this.$store.getters.getSettingStatusByIndex(index))
+      // }
       return !this.$store.getters.getSettingStatusByIndex(index)
     },
     showLogined: function () {
@@ -179,7 +178,7 @@ export default {
 
       vm.$store.commit('updateLoginListTimer', setTimeout(() => {
         vm.loginListAutoRefresh()
-      }, 5000))
+      }, vm.loginListInterval))
     },
     showWarning: function () {
       var vm = this

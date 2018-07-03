@@ -1,8 +1,8 @@
  /*更改layer弹出框为透明样式*/
-.layui-layer-dialog {
+.layui-layer-dialog ,.layui-layer-iframe{
   background: rgba(23, 20, 20, 0.5);
 }
-.layui-layer-page {
+.layui-layer-page ,.layui-layer-iframe{
   background: rgba(23, 20, 20, 0.5);
   border: 1px solid rgba(66, 199, 199, 0.63);
 }

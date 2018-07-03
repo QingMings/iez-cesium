@@ -6,6 +6,7 @@
       <CesiumToolBarExtend/>
       <LocationBox  :location-info="location"></LocationBox>
       <SoundWarning></SoundWarning>
+      <DeviceDataWidget :url="iframeUrl" :show="dataShow" :click-show="clickDataShow"></DeviceDataWidget>
       <!--<Logo></Logo>-->
     </div>
 
@@ -23,15 +24,18 @@ import LocalGeocoder from '../utils/LocalGeocoder'
 import SoundWarning from './SoundWarning'
 import Icon from '../../node_modules/iview/src/components/icon/icon.vue'
 import viewerCesiumNavigationMixin from '../widget/navi/viewerCesiumNavigationMixin'
+import $ from '../../static/js/jquery-vendor'
 // import CreatePolygon from '../utils/CreatePolygon'
 import DrConf from '../utils/DrConf'
 import Warn from './Warn'
 import Logo from './Logo'
 import iutil from '../utils/iviewUtils'
+import DeviceDataWidget from './DeviceDataWidget'
 /* eslint-disable no-unused-vars */
 
 export default {
   components: {
+    DeviceDataWidget,
     Logo,
     Warn,
     Icon,
@@ -75,7 +79,10 @@ export default {
       highlighted: {
         feature: undefined,
         originalColor: Cesium.Color.RED.withAlpha(DrConf.buildAlpha)
-      }
+      },
+      dataShow: false,
+      clickDataShow: false,
+      iframeUrl: ''
     }
   },
   created () {
@@ -102,12 +109,12 @@ export default {
     var vm = this
     Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(73, 4, 135, 53)
 
-    // Cesium.BingMapsApi.defaultKey = ''
+    Cesium.BingMapsApi.defaultKey = ''
     this.viewer = new Cesium.Viewer('cesiumContainer', this.config)
     viewerCesiumNavigationMixin(this.viewer, {
       defaultResetView: Cesium.Rectangle.fromDegrees(118.8345, 38.143973, 118.83815627, 38.14106426)
     })
-    // this.viewer.scene.debugShowFramesPerSecond = true
+    this.viewer.scene.debugShowFramesPerSecond = true
     // this.viewer.scene.debugShowContentBoundingVolume = true
     this.handleSpinCustom()
     this.removeDefaultEvent()
@@ -115,6 +122,7 @@ export default {
     this.loadGeojson()
     this.loadBuildingGeojson()
     this.showHight()
+    this.showdeviceData()
     this.entityPick()
     this.getWarningAddress()
     // this.viewer.clock.onTick.addEventListener(function () {
@@ -200,6 +208,12 @@ export default {
     // 自动巡检按钮功能是否具备开启条件，不具备则按钮被禁用
     autoInspectionLoadstatus () {
       return this.$store.getters.getAutoInspectionLoadstatus
+    },
+    autoInspectionInterval () {
+      return this.$store.getters.getAutoInspectionInterval
+    },
+    areaInspectionService () {
+      return this.$store.getters.getAreaInspectionUrl
     }
   },
   watch: {
@@ -214,7 +228,23 @@ export default {
       this.buildDataSource.show = val
     },
     autoInspection (val, oldVal) {
+      console.info(`autoInspection  oldvalue ${oldVal} , val ${val}`)
       this.enableAutoInspection(val)
+    },
+    autoInspectionLoadstatus (val, oldval) {
+      // console.info(`QQQ${val}`)
+      // 资源正常加载完毕
+      if (val) {
+        // 默认自动巡检按钮是否启用
+        if (this.autoInspection) {
+          if (this.autoInspectionTimer) {
+            clearTimeout(this.autoInspectionTimer)
+          }
+          setTimeout(() => {
+            this.enableAutoInspection(val)
+          }, 5000)
+        }
+      }
     }
   },
   methods: {
@@ -240,9 +270,15 @@ export default {
     },
     enableAutoInspection: function (isEnabled) {
       var vm = this
-      console.info(`哈哈哈哈：${isEnabled}`)
+      // console.info(`哈哈哈哈：${isEnabled}`)
       if (isEnabled) {
         vm.startAntoInspection()
+        vm.hideClickData()
+        vm.hideDeviceData()
+        vm.showDeviceData()
+      } else {
+        vm.stopAutoInspection()
+        vm.hideDeviceData()
       }
     },
     startAntoInspection: function () {
@@ -250,29 +286,54 @@ export default {
       // console.info(vm.autoInspectionLoadstatus)
       if (vm.autoInspectionLoadstatus) {
         if (vm.regionDataSource !== undefined) {
-          var regionLength = vm.regionDataSource.entities.values.length
+          var regionLength = vm.regionDataSource.entities.values.length - 1
+          // 更新巡检区域Index
           if (vm.regionIndex >= 0 && vm.regionIndex < regionLength) {
             vm.regionIndex += 1
             console.info(vm.regionIndex)
           } else {
             vm.regionIndex = 0
+            console.info(vm.regionIndex)
           }
-          if (Cesium.defined(vm.highlighted.feature)) {
-            vm.highlighted.feature.polygon.material.color = vm.highlighted.originalColor
-            vm.highlighted.feature = undefined
-          }
+          //
+          vm.entityHighlightedReset()
+          // console.info(`||||${vm.regionIndex}`)
           var entity = vm.regionDataSource.entities.values[vm.regionIndex]
-          vm.highlighted.feature = entity
-          Cesium.Color.clone(entity.polygon.material.color.getValue(vm.viewer.clock.currentTime), vm.highlighted.originalColor)
-          entity.polygon.material.color.setValue(Cesium.Color.YELLOW.withAlpha(DrConf.entityAlpha))
-          vm.viewer.carm.zoomTo(entity)
+          // todo 打包时候放开
+          // vm.iframeUrl = `${vm.areaInspectionService}?areaId=${entity.properties.areaId.getValue(vm.viewer.clock.currentTime)}`
+          vm.iframeUrl = `${vm.areaInspectionService}?areaId=${vm.regionIndex}`
+          vm.entityHighlighted(entity)
+          // vm.viewer.flyTo(entity)
 
           // 控制自动巡检
           vm.$store.commit('updateAutoInspectionTimer', setTimeout(() => {
             vm.startAntoInspection()
-          }, 5000))
+          }, vm.autoInspectionInterval))
         }
       }
+    },
+    stopAutoInspection: function () {
+      var vm = this
+      if (this.autoInspectionTimer) {
+        clearTimeout(this.autoInspectionTimer)
+      }
+    },
+    showDeviceData: function () {
+      this.dataShow = true
+    },
+    hideDeviceData: function () {
+      console.info('hideDeviceData')
+      this.dataShow = false
+    },
+    showClickData: function () {
+      this.clickDataShow = true
+    },
+    hideClickData: function () {
+      this.clickDataShow = false
+    },
+    updateIframeSrc: function (url) {
+      var vm = this
+      vm.iframeUrl = url
     },
     // 加载geojson数据
     loadGeojson: function () {
@@ -335,7 +396,7 @@ export default {
     },
     loadBuildingGeojson: function () {
       var vm = this
-      var buildServiceUrl = vm.getBuildGeojsonService + '?type=0'
+      var buildServiceUrl = vm.getBuildGeojsonService + '?objType=0'
 
       var datasource1 = new Cesium.CustomDataSource('buildPolygon')
       vm.$http.get(buildServiceUrl).then(function (res) {
@@ -355,7 +416,7 @@ export default {
         vm.$Message.error(iutil.err(`请求 建筑数据服务失败: ${error}`))
         console.error(error)
       })
-      var regionServiceUrl = vm.getBuildGeojsonService + '?type=2'
+      var regionServiceUrl = vm.getBuildGeojsonService + '?objType=2'
       var datasource2 = new Cesium.CustomDataSource('regionPolygon')
       vm.$http.get(regionServiceUrl).then(function (res) {
         // console.info(res.data)
@@ -492,6 +553,7 @@ export default {
     // 移除默认双击事件
     removeDefaultEvent: function (target) {
       this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
+      this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK)
     },
     getheight: function (target) {
       var vm = this
@@ -569,10 +631,7 @@ export default {
               // 鼠标悬浮在建筑或区域标注上
               // console.info('13')
 
-              if (Cesium.defined(vm.highlighted.feature)) {
-                vm.highlighted.feature.polygon.material.color = vm.highlighted.originalColor
-                vm.highlighted.feature = undefined
-              }
+              vm.entityHighlightedReset()
               if (!Cesium.defined(pickEntity)) {
                 nameOverlay.style.display = 'none'
                 return
@@ -588,12 +647,8 @@ export default {
               }
               nameOverlay.textContent = name
               if (pickEntity !== selected.feature) {
-                vm.highlighted.feature = pickEntity
-                Cesium.Color.clone(pickEntity.polygon.material.color.getValue(vm.viewer.clock.currentTime), vm.highlighted.originalColor)
-                pickEntity.polygon.material.color.setValue(Cesium.Color.YELLOW.withAlpha(DrConf.entityAlpha))
+                vm.entityHighlighted(pickEntity)
               }
-              // console.info(pickEntity.polygon.material)
-              // pickEntity.polygon.material.color.setValue(Cesium.Color.YELLOW.withAlpha(0.4))
             } else {
               // console.info('14')
               if (pinkid !== undefined) {
@@ -609,7 +664,50 @@ export default {
         }
       }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
     },
+    showdeviceData: function () {
+      var vm = this
+      var handler = new Cesium.ScreenSpaceEventHandler(this.viewer.scene.canvas)
+      handler.setInputAction(function (leftclick) {
+        var scene = vm.viewer.scene
+        if (scene.mode !== Cesium.SceneMode.MORPHING) {
+          var pickedObject = scene.pick(leftclick.position)
+          if (scene.pickPositionSupported && Cesium.defined(pickedObject)) {
+            var cartesian = vm.viewer.scene.pickPosition(leftclick.position)
+            if (Cesium.defined(cartesian)) {
+              var pickEntity = Cesium.defaultValue(pickedObject.id, pickedObject.primitive.id)
+              if (pickEntity instanceof Cesium.Entity && pickEntity.polygon) {
+                // 停止自动巡检
+                console.info(vm.$store.getters.getAutoInspectionStatus)
+                vm.$store.commit('autoInspection', false)
+                console.info(vm.$store.getters.getAutoInspectionStatus)
+                //
+                vm.entityHighlightedReset()
+                vm.entityHighlighted(pickEntity)
+                // vm.iframeUrl = `${vm.areaInspectionService}?areaId=${entity.properties.areaId.getValue(vm.viewer.clock.currentTime)}`
 
+                // vm.hideDeviceData()
+                vm.showClickData()
+                vm.iframeUrl = `${vm.areaInspectionService}?areaId=${Math.random()}`
+              }
+            }
+          }
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
+    },
+    entityHighlightedReset: function () {
+      var vm = this
+      if (Cesium.defined(vm.highlighted.feature)) {
+        // 还原上次被高亮的区域
+        vm.highlighted.feature.polygon.material.color = vm.highlighted.originalColor
+        vm.highlighted.feature = undefined
+      }
+    },
+    entityHighlighted: function (entity) {
+      var vm = this
+      vm.highlighted.feature = entity
+      Cesium.Color.clone(entity.polygon.material.color.getValue(vm.viewer.clock.currentTime), vm.highlighted.originalColor)
+      entity.polygon.material.color.setValue(Cesium.Color.YELLOW.withAlpha(DrConf.entityAlpha))
+    },
     // 页面初始化 获取历史报警信息
     getHistoryWarning: function () {
       var vm = this
@@ -754,6 +852,9 @@ export default {
           },
           properties: {
             type: json.objType
+            // todo 打包时候放开
+            // ,
+            // areaId: json.areaId
           }
         })
       } else {
@@ -769,6 +870,10 @@ export default {
           },
           properties: {
             type: json.objType
+            // todo 打包时候放开
+            // ,
+            // areaId: json.areaId,
+            // potId: json.potId
           }
         })
       }

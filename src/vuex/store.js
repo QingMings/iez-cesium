@@ -48,7 +48,9 @@ const store = new Vuex.Store({
       historyWarningsUrl: '',
       meterViewUrl: '',
       videoViewUrl: '',
-      locationsUrl: ''
+      locationsUrl: '',
+      logReportUrl: '',
+      areaInspectionUrl: ''
     },
     // 报警
     warning: [],
@@ -65,12 +67,19 @@ const store = new Vuex.Store({
       loginListTimer: undefined,
       autoInspectionTimer: undefined
     },
+    interval: {
+      loginListInterval: 5000,
+      autoInspectionInterval: 5000
+    },
     complete: {
       hotPointLoaded: false,
       regionDataSourceLoaded: false,
       buildingDataSourceLoaded: false
+    },
+    layer: {
+      autoLayerIndex: undefined,
+      clickLayerIndex: undefined
     }
-
   },
   mutations: {
     //  post参数
@@ -99,8 +108,13 @@ const store = new Vuex.Store({
       state.api.meterViewUrl = config.meterViewUrl
       state.api.videoViewUrl = config.videoViewUrl
       state.api.locationsUrl = config.locationsUrl
+      state.api.logReportUrl = config.logReportUrl
+      state.api.areaInspectionUrl = config.areaInspectionUrl
       if (config.settings) {
         state.settings = config.settings
+      }
+      if (config.interval) {
+        state.interval = config.interval
       }
     },
     // 更新 warning Server 地址
@@ -120,12 +134,15 @@ const store = new Vuex.Store({
     updateSettings (state, mysettings) {
       state.settings = mysettings
     },
+    // 是否显示 热点设置按钮
     showHotPoint (state, status) {
       state.settings.showHotPoint = status
     },
+    //  是否显示 区域标注设置按钮
     showGroupMark (state, status) {
       state.settings.showGroupMark = status
     },
+    // 是否显示 建筑标注设置按钮
     showBuildMark (state, status) {
       state.settings.showBuildMark = status
     },
@@ -133,21 +150,41 @@ const store = new Vuex.Store({
     autoInspection (state, status) {
       state.settings.autoInspection = status
     },
+    // 更新 登录列表 timer
     updateLoginListTimer (state, timer) {
       state.timeOut.loginListTimer = timer
     },
+    // 更新 自动巡检 timer
     updateAutoInspectionTimer (state, timer) {
       state.timeOut.autoInspectionTimer = timer
     },
+    // 热点资源是否加载完成
     updateHotPointComplete (state, isLoaded) {
       state.complete.hotPointLoaded = isLoaded
     },
+    // 区域资源是否加载完成
     updateRegionDataComplete (state, isLoaded) {
       state.complete.regionDataSourceLoaded = isLoaded
     },
+    // 建筑资源是否加载完成
     updateBuildingDataComplete (state, isLoaded) {
       state.complete.buildingDataSourceLoaded = isLoaded
+    },
+    // 更新 loginlist 刷新间隔时间
+    updateLoginListInterval (state, interval) {
+      state.interval.loginListInterval = interval
+    },
+    // 更新 自动巡检 刷新间隔时间
+    updateAutoInspectionInterval (state, interval) {
+      state.interval.autoInspectionInterval = interval
+    },
+    updateAutoLayerIndex (state, index) {
+      state.layer.autoLayerIndex = index
+    },
+    updateClickLayerIndex (state, index) {
+      state.layer.clickLayerIndex = index
     }
+
   },
   getters: {
     // Geojson 服务地址
@@ -216,6 +253,12 @@ const store = new Vuex.Store({
     getLocationsUrl: (state) => {
       return state.api.locationsUrl
     },
+    getLogInsertUrl: (state) => {
+      return state.api.logReportUrl
+    },
+    getAreaInspectionUrl: (state) => {
+      return state.api.areaInspectionUrl
+    },
     // 获取 uesr 信息
     getUser: (state) => {
       return state.user
@@ -262,6 +305,12 @@ const store = new Vuex.Store({
     getAutoInspectionTimer: (state) => {
       return state.timeOut.autoInspectionTimer
     },
+    getLoginListInterval: (state) => {
+      return state.interval.loginListInterval
+    },
+    getAutoInspectionInterval: (state) => {
+      return state.interval.autoInspectionInterval
+    },
     getHotPointLoadstatus: (state) => {
       return state.complete.hotPointLoaded
     },
@@ -293,7 +342,13 @@ const store = new Vuex.Store({
           return state.complete.buildingDataSourceLoaded && state.complete.regionDataSourceLoaded
         }
       }
-    }
+    },
+    getAutoLayerIndex: (state) => {
+      return state.layer.autoLayerIndex
+    },
+    getClickLayerIndex: (state) => {
+      return state.layer.clickLayerIndex
+}
   }
 })
 

@@ -76,6 +76,9 @@ export default {
     getlocationsService () {
       return this.$store.getters.getLocationsUrl
     },
+    getlogInsertService () {
+      return this.$store.getters.getLogInsertUrl
+    },
     getUserId () {
       return this.$store.getters.getUser.userCode
     }
@@ -101,6 +104,9 @@ export default {
       }
       if (messageEvent.data['action'] === 'getlocationsUrl') {
         vm.message({action: 'locations', target: vm.getlocationsService})
+      }
+      if (messageEvent.data['action'] === 'getlogInsertUrl') {
+        vm.message({action: 'logInsert', target: vm.getlogInsertService})
       }
       if (messageEvent.data['action'] === 'getUserId') {
         vm.message({action: 'uid', target: vm.getUserId})
