@@ -23,6 +23,7 @@ export default {
     }
   },
   created () {
+    console.info("sss")
     // 监听showPanorama 方法 此方法由 ToolBar.vue 中的按钮触发,此事件在热部署中会多次执行，解决方案往下看
     // https://www.cnblogs.com/xiaochongchong/p/8127148.html
     this.$root.eventBus.$on('showPanorama', this.showPanorama)
@@ -143,7 +144,7 @@ export default {
         .then(function () {
         }).catch(function (error) {
           // vm.$Message.warn(`上报用户位置信息出错${error}`)
-          console.info(`上报用户位置信息出错${error}`)
+          console.error(`上报用户位置信息出错${error}`)
         })
     },
     // 设置 post参数

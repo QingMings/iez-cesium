@@ -6,7 +6,7 @@
       <CesiumToolBarExtend/>
       <LocationBox  :location-info="location"></LocationBox>
       <SoundWarning></SoundWarning>
-      <DeviceDataWidget :url="iframeUrl" :show="dataShow" :click-show="clickDataShow"></DeviceDataWidget>
+      <DeviceDataWidget :url="iframeUrl" :region-name="iframeTitle" :show="dataShow" :click-show="clickDataShow"></DeviceDataWidget>
       <!--<Logo></Logo>-->
     </div>
 
@@ -30,6 +30,7 @@ import DrConf from '../utils/DrConf'
 import Warn from './Warn'
 import Logo from './Logo'
 import iutil from '../utils/iviewUtils'
+import log from '../utils/Log'
 import DeviceDataWidget from './DeviceDataWidget'
 /* eslint-disable no-unused-vars */
 
@@ -57,6 +58,10 @@ export default {
         baseLayerPicker: false,
         sceneModePicker: false
         // ,
+        // imageryProvider: Cesium.createTileMapServiceImageryProvider({
+        //   url: Cesium.buildModuleUrl('Assets/Textures/NaturalEarthII')
+        // })
+        // ,
         // skyBox: new Cesium.SkyBox({
         //   sources: {
         //     positiveX: 'static/negx.jpg',
@@ -82,7 +87,9 @@ export default {
       },
       dataShow: false,
       clickDataShow: false,
-      iframeUrl: ''
+      iframeUrl: '',
+      iframeTitle: '',
+      defaultResetView: Cesium.Rectangle.fromDegrees(118.8345, 38.143973, 118.83815627, 38.14106426)
     }
   },
   created () {
@@ -112,9 +119,9 @@ export default {
     Cesium.BingMapsApi.defaultKey = ''
     this.viewer = new Cesium.Viewer('cesiumContainer', this.config)
     viewerCesiumNavigationMixin(this.viewer, {
-      defaultResetView: Cesium.Rectangle.fromDegrees(118.8345, 38.143973, 118.83815627, 38.14106426)
+      defaultResetView: vm.defaultResetView
     })
-    this.viewer.scene.debugShowFramesPerSecond = true
+    // this.viewer.scene.debugShowFramesPerSecond = true
     // this.viewer.scene.debugShowContentBoundingVolume = true
     this.handleSpinCustom()
     this.removeDefaultEvent()
@@ -125,6 +132,8 @@ export default {
     this.showdeviceData()
     this.entityPick()
     this.getWarningAddress()
+    // this.limitCameraHeight(50)
+    this.limitCameraHeight2()
     // this.viewer.clock.onTick.addEventListener(function () {
     //   console.log([vm.viewer.camera.up.x,vm.viewer.camera.up.y,vm.viewer.camera.up.z])
     // })
@@ -214,6 +223,12 @@ export default {
     },
     areaInspectionService () {
       return this.$store.getters.getAreaInspectionUrl
+    },
+    cameraFollow () {
+      return this.$store.getters.getCameraFollowStatus
+    },
+    logInsertService () {
+      return this.$store.getters.getLogInsertUrl
     }
   },
   watch: {
@@ -223,14 +238,33 @@ export default {
     },
     groupStatus (val, oldVal) {
       this.regionDataSource.show = val
+      // 关闭分区 同事关闭 自动巡检
+      if (val === false) {
+        this.$store.commit('autoInspection', false)
+      }
     },
     buildStatus (val, oldVal) {
       this.buildDataSource.show = val
+      // if (val === false) {
+      //   this.$store.commit('autoInspection', false)
+      // }
     },
+    // 开启关闭自动巡检监控
     autoInspection (val, oldVal) {
-      console.info(`autoInspection  oldvalue ${oldVal} , val ${val}`)
+      // console.info(`autoInspection  oldvalue ${oldVal} , val ${val}`)
       this.enableAutoInspection(val)
+      if (!this.groupStatus) {
+        if (val) {
+          setTimeout(() => {
+            this.$store.commit('autoInspection', false)
+          }, 1000)
+          this.$Message.info(iutil.info('开启自动巡检需要开启分区标注'))
+        }
+      }
     },
+    // autoInspectionTimer (val, oldval) {
+    //   clearTimeout(oldval)
+    // },
     autoInspectionLoadstatus (val, oldval) {
       // console.info(`QQQ${val}`)
       // 资源正常加载完毕
@@ -241,13 +275,83 @@ export default {
             clearTimeout(this.autoInspectionTimer)
           }
           setTimeout(() => {
-            this.enableAutoInspection(val)
+            if (this.autoInspection) {
+              this.enableAutoInspection(val)
+            }
           }, 5000)
         }
+      }
+    },
+    cameraFollow (val, oldval) {
+      var vm = this
+      if (val === false) {
+        vm.viewReset()
       }
     }
   },
   methods: {
+    limitCameraHeight: function (height) {
+      var vm = this
+      var camera = vm.viewer.camera
+      var postRenderEventListener = vm.viewer.scene.postRender.addEventListener(() => {
+        if (camera._positionCartographic.height <= height) {
+          console.info(`height: ${camera._positionCartographic.height}`)
+          console.info(`camera`)
+          var ellipsoid = vm.viewer.scene.globe.ellipsoid
+          var cartesianPosition = ellipsoid.cartesianToCartographic(camera.position)
+          var Cartesian3 = ellipsoid.cartographicToCartesian(new Cesium.Cartographic(cartesianPosition.longitude, cartesianPosition.latitude, height))
+          vm.viewer.camera.setView({
+            destination: Cartesian3,
+            orientation: {
+              heading: camera.heading,
+              pitch: camera.pitch,
+              roll: camera.roll
+            }
+          })
+        }
+      })
+      return postRenderEventListener
+    },
+    limitCameraHeight2: function () {
+      var vm = this
+      vm.viewer.scene.screenSpaceCameraController.minimumZoomDistance=100
+      vm.viewer.clock.onTick.addEventListener(function () {
+        setMinCamera()
+      })
+      var setMinCamera = function () {
+        if (vm.viewer.camera.pitch > 0) {
+          vm.viewer.scene.screenSpaceCameraController.enableTilt = false
+        }
+      }
+      var startMousePosition
+      var mousePosition
+      var handler = new Cesium.ScreenSpaceEventHandler(vm.viewer.scene.canvas)
+      handler.setInputAction(function (movement) {
+        mousePosition = startMousePosition = Cesium.Cartesian3.clone(movement.position)
+        handler.setInputAction(function (movement) {
+          mousePosition = movement.endPosition
+          var y = mousePosition.y - startMousePosition.y
+          if (y > 0) {
+            vm.viewer.scene.screenSpaceCameraController.enableTilt = true
+          }
+        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+      }, Cesium.ScreenSpaceEventType.MIDDLE_DOWN)
+
+      handler.setInputAction(function (movement) {
+        handler.setInputAction(function (movement) {
+
+        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+      }, Cesium.ScreenSpaceEventType.MIDDLE_UP)
+    },
+    viewReset () {
+      var vm = this
+      vm.viewer.camera.flyTo({
+        destination: vm.defaultResetView,
+        orientation: {
+          heading: Cesium.Math.toRadians(5.729578)
+        }
+      })
+    },
     // 显示 loading 加载 3s后消失
     handleSpinCustom () {
       this.$Spin.show({
@@ -287,27 +391,42 @@ export default {
       if (vm.autoInspectionLoadstatus) {
         if (vm.regionDataSource !== undefined) {
           var regionLength = vm.regionDataSource.entities.values.length - 1
+          vm.entityHighlightedReset()
           // 更新巡检区域Index
           if (vm.regionIndex >= 0 && vm.regionIndex < regionLength) {
             vm.regionIndex += 1
-            console.info(vm.regionIndex)
+            // console.info(vm.regionIndex)
           } else {
             vm.regionIndex = 0
-            console.info(vm.regionIndex)
+            // console.info(vm.regionIndex)
           }
           //
-          vm.entityHighlightedReset()
+
           // console.info(`||||${vm.regionIndex}`)
           var entity = vm.regionDataSource.entities.values[vm.regionIndex]
           // todo 打包时候放开
           // vm.iframeUrl = `${vm.areaInspectionService}?areaId=${entity.properties.areaId.getValue(vm.viewer.clock.currentTime)}`
           vm.iframeUrl = `${vm.areaInspectionService}?areaId=${vm.regionIndex}`
+          vm.iframeTitle = entity.name
           vm.entityHighlighted(entity)
-          // vm.viewer.flyTo(entity)
-
+          if (vm.cameraFollow) {
+            vm.viewer.flyTo(entity)
+          }
+          // 日志上报
+          log.report(vm.logInsertService, {
+            userCode: vm.userinfo.userCode,
+            devCode: '',
+            operation: '自动巡检',
+            operationContent: entity.name,
+            remarks: ''
+          })
           // 控制自动巡检
           vm.$store.commit('updateAutoInspectionTimer', setTimeout(() => {
-            vm.startAntoInspection()
+            if (vm.autoInspection && vm.groupStatus) {
+              vm.startAntoInspection()
+            } else {
+              this.$store.commit('autoInspection', false)
+            }
           }, vm.autoInspectionInterval))
         }
       }
@@ -315,6 +434,7 @@ export default {
     stopAutoInspection: function () {
       var vm = this
       if (this.autoInspectionTimer) {
+        vm.entityHighlightedReset()
         clearTimeout(this.autoInspectionTimer)
       }
     },
@@ -322,7 +442,7 @@ export default {
       this.dataShow = true
     },
     hideDeviceData: function () {
-      console.info('hideDeviceData')
+      // console.info('hideDeviceData')
       this.dataShow = false
     },
     showClickData: function () {
@@ -489,8 +609,9 @@ export default {
         // 调整角度
         var heading = Cesium.Math.toRadians(5.729578)
         var patch = Cesium.Math.toRadians(-89.8)
-        console.info(patch)
+        // console.info(patch)
         vm.viewer.zoomTo(tileset, new Cesium.HeadingPitchRange(heading, patch, boundingSphere.radius * 1.7))
+        // vm.viewReset()
         // vm.viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY)
       }).otherwise(function (err) {
         vm.$Message.error(iutil.err(`请求 模型服务失败: ${err}`))
@@ -677,9 +798,9 @@ export default {
               var pickEntity = Cesium.defaultValue(pickedObject.id, pickedObject.primitive.id)
               if (pickEntity instanceof Cesium.Entity && pickEntity.polygon) {
                 // 停止自动巡检
-                console.info(vm.$store.getters.getAutoInspectionStatus)
+                // console.info(vm.$store.getters.getAutoInspectionStatus)
                 vm.$store.commit('autoInspection', false)
-                console.info(vm.$store.getters.getAutoInspectionStatus)
+                // console.info(vm.$store.getters.getAutoInspectionStatus)
                 //
                 vm.entityHighlightedReset()
                 vm.entityHighlighted(pickEntity)
@@ -687,7 +808,28 @@ export default {
 
                 // vm.hideDeviceData()
                 vm.showClickData()
-                vm.iframeUrl = `${vm.areaInspectionService}?areaId=${Math.random()}`
+                // 建筑
+                // todo 打包时候放开
+                // if (pickEntity.properties.type.getValue(vm.viewer.clock.currentTime) === 0) {
+                //   vm.iframeUrl = `${vm.areaInspectionService}?areaId=${pickEntity.properties.areaId.getValue(vm.viewer.clock.currentTime)}&potId=${pickEntity.properties.potId.getValue(vm.viewer.clock.currentTime)}`
+                // } else {
+                //   vm.iframeUrl = `${vm.areaInspectionService}?areaId=${pickEntity.properties.areaId.getValue(vm.viewer.clock.currentTime)}`
+                // }
+                if (pickEntity.properties.type.getValue(vm.viewer.clock.currentTime) === 0) {
+                  vm.iframeUrl = `${vm.areaInspectionService}?areaId=${Math.random()}&potId=${Math.random()}`
+                } else {
+                  vm.iframeUrl = `${vm.areaInspectionService}?areaId=${Math.random()}`
+                }
+                // 日志上报
+                log.report(vm.logInsertService, {
+                  userCode: vm.userinfo.userCode,
+                  devCode: '',
+                  operation: '手动巡检',
+                  operationContent: pickEntity.name,
+                  remarks: ''
+                })
+                // vm.iframeUrl = `${vm.areaInspectionService}?areaId=${Math.random()}`
+                vm.iframeTitle = pickEntity.name
               }
             }
           }

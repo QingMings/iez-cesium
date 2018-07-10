@@ -59,7 +59,8 @@ const store = new Vuex.Store({
       showHotPoint: true,
       showGroupMark: true,
       showBuildMark: true,
-      autoInspection: true
+      autoInspection: true,
+      cameraFollow: false
     },
     // 定时器的管理
     timeOut: {
@@ -149,6 +150,9 @@ const store = new Vuex.Store({
     // 自动巡检功能
     autoInspection (state, status) {
       state.settings.autoInspection = status
+    },
+    cameraFollow (state, status) {
+      state.settings.cameraFollow = status
     },
     // 更新 登录列表 timer
     updateLoginListTimer (state, timer) {
@@ -287,6 +291,9 @@ const store = new Vuex.Store({
     getAutoInspectionStatus: (state) => {
       return state.settings.autoInspection
     },
+    getCameraFollowStatus: (state) => {
+      return state.settings.cameraFollow
+    },
     // 根据下标获得 setting
     getSettingByIndex: (state) => (index) => {
       if (index === 0) {
@@ -297,6 +304,8 @@ const store = new Vuex.Store({
         return state.settings.showBuildMark
       } else if (index === 3) {
         return state.settings.autoInspection
+      } else if (index === 4) {
+        return state.settings.cameraFollow
       }
     },
     getLoginListTimer: (state) => {
@@ -341,6 +350,8 @@ const store = new Vuex.Store({
         } else {
           return state.complete.buildingDataSourceLoaded && state.complete.regionDataSourceLoaded
         }
+      } else if (index === 4) {
+        return true
       }
     },
     getAutoLayerIndex: (state) => {

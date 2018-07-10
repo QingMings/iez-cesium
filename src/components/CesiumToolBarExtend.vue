@@ -88,7 +88,7 @@ export default {
   },
   data () {
     return {
-      settings: ['热点标注', '分区标注', '建筑标注', '自动巡检'],
+      settings: ['热点标注', '分区标注', '建筑标注', '自动巡检', '相机跟随'],
       visible: false,
       loginedList: []
     }
@@ -138,6 +138,8 @@ export default {
         case vm.settings[2]: vm.$store.commit('showBuildMark', status)
           break
         case vm.settings[3]: vm.$store.commit('autoInspection', status)
+          break
+        case vm.settings[4]: vm.$store.commit('cameraFollow', status)
           break
       }
     },

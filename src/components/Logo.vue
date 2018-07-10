@@ -1,6 +1,6 @@
 <template>
   <div id="Logo">
-    <img src="/static/WechatIMG38.png"/>
+    <img src="static/WechatIMG38.png"/>
   </div>
 </template>
 

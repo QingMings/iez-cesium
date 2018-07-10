@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  props: ['url', 'show', 'clickShow'],
+  props: ['url', 'regionName', 'show', 'clickShow'],
   name: 'DeviceDataWidget',
   computed: {
     autolayerIndex: function () {
@@ -25,6 +25,9 @@ export default {
     },
     url: function (val, oldval) {
       this.iframeSrc(val)
+    },
+    regionName: function (val, oldval) {
+      this.iframeTitle(val)
     }
   },
   methods: {
@@ -35,7 +38,7 @@ export default {
         if (this.autolayerIndex !== undefined) {
           this.$layer.close(this.autolayerIndex)
           // this.$layer.closeAll('iframe')
-          console.info('closeALl')
+          // console.info('closeALl')
         }
       }
     },
@@ -46,7 +49,7 @@ export default {
         if (this.clicklayerIndex !== undefined) {
           this.$layer.close(this.clicklayerIndex)
           // this.$layer.closeAll('iframe')
-          console.info('closeALl')
+          // console.info('closeALl')
         }
       }
     },
@@ -54,11 +57,14 @@ export default {
     iframeSrc: function (url) {
       this.$layer.iframeSrc(this.$layer.index, url)
     },
+    iframeTitle: function (title) {
+      this.$layer.title(`设备巡检 - ${title}`, this.$layer.index)
+    },
     showData: function () {
       var vm = this
       this.$layer.open({
         type: 2,
-        title: '设备巡检',
+        title: `设备巡检 - ${vm.regionName}`,
         shadeClose: false,
         // resize: false,
         zIndex: 90,
@@ -67,11 +73,11 @@ export default {
         area: ['auto', 'auto'],
         shade: 0, // 关闭遮罩
         btn: [], // 不显示按钮
-        content: vm.url,
+        content: [vm.url, 'no'],
         success: function (layero, index) {
           // vm.layerIndex = layero
           vm.$store.commit('updateAutoLayerIndex', index)
-          console.info('Open ')
+          // console.info('Open ')
         }
       })
     },
@@ -79,7 +85,7 @@ export default {
       var vm = this
       this.$layer.open({
         type: 2,
-        title: '设备巡检',
+        title: `设备巡检 - ${vm.regionName}`,
         shadeClose: false,
         // resize: false,
         zIndex: 90,
@@ -88,11 +94,12 @@ export default {
         area: ['auto', 'auto'],
         shade: 0, // 关闭遮罩
         btn: [], // 不显示按钮
-        content: vm.url,
+        content: [vm.url, 'no'],
         success: function (layero, index) {
           // vm.layerIndex = layero
           vm.$store.commit('updateClickLayerIndex', index)
-          console.info('Open ')
+          vm.$layer.iframeAuto(index)
+          // console.info('Open ')
         }
       })
     }

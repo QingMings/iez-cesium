@@ -74,8 +74,8 @@ export default {
         btn: [], // 不显示按钮
         content: $('#warnContent'),
         success: function (index, layero) {
-          console.info(index)
-          console.info(layero)
+          // console.info(index)
+          // console.info(layero)
         }
       })
     },

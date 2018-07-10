@@ -7,4 +7,11 @@ IviewUtil.err = function (message) {
     closable: true
   }
 }
+IviewUtil.info = function (message) {
+  return {
+    content: message,
+    duration: 5,
+    closable: true
+  }
+}
 export default IviewUtil

@@ -38,14 +38,15 @@ const api = {
     showHotPoint: true,
     showGroupMark: true,
     showBuildMark: true,
-    // 资源正常加载之后，如果这个为 true，则在页面加载完成后就开始自动巡检
-    autoInspection: true
+    // 资源正常加载之后，如果这个为 true，则在页面加载完成后就开始自动巡检,延迟5s
+    autoInspection: true,
+    cameraFollow: false
   },
   // timer 时间间隔
   interval: {
     // 登录人数列表 刷新间隔
     loginListInterval: 5000,
     // 自动巡检刷新间隔
-    autoInspectionInterval: 1000
+    autoInspectionInterval: 5000
   }
 }
